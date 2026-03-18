@@ -1,6 +1,10 @@
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Titan.Library.Infrastructure.Connectors;
+using Titan.Library.Infrastructure.Migrations;
+using Titan.Library.Infrastructure.Migrations.Abstractions;
+using Titan.Library.Infrastructure.Migrations.Utils;
 
 namespace Titan.Library.Infrastructure;
 
@@ -24,7 +28,23 @@ public static class InfrastructureBootstrapper
         services.AddSingleton<IDbConnectionFactory>(_ => new PostgresDbConnectionFactory(
             connectionString
         ));
+        services.AddScoped<IDbMigrator, SqlDbMigrator>();
+        services.RegisterSqlMigrations();
 
         return services;
+    }
+
+    private static void RegisterSqlMigrations(this IServiceCollection services)
+    {
+        var migrationType = typeof(ISqlMigration);
+
+        var implementations = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => migrationType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+        foreach (var implementation in implementations)
+        {
+            services.AddTransient(migrationType, implementation);
+        }
     }
 }

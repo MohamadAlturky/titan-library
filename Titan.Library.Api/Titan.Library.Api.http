@@ -1,6 +1,0 @@
-@Titan.Library.Api_HostAddress = http://localhost:5208
-
-GET {{Titan.Library.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
