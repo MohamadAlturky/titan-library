@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Titan.Library.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Titan.Library.Api", "Titan.Library.Api\Titan.Library.Api.csproj", "{8C12F35A-2E59-43EB-B5C9-6161CB6CE11E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Titan.Library.Contracts", "Titan.Library.Contracts\Titan.Library.Contracts.csproj", "{15DA4B2D-F060-4345-BDD5-DDD7E7FF7712}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{8C12F35A-2E59-43EB-B5C9-6161CB6CE11E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C12F35A-2E59-43EB-B5C9-6161CB6CE11E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C12F35A-2E59-43EB-B5C9-6161CB6CE11E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15DA4B2D-F060-4345-BDD5-DDD7E7FF7712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15DA4B2D-F060-4345-BDD5-DDD7E7FF7712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15DA4B2D-F060-4345-BDD5-DDD7E7FF7712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15DA4B2D-F060-4345-BDD5-DDD7E7FF7712}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@ namespace Titan.Library.Domain.Books;
 
 public class Book : BaseEntity<int>
 {
-    public string ISBN { get; set; } = string.Empty;
+    public string Isbn { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public List<Borrow> Borrows { get; set; } = [];
     public List<BookQuantityTransactionHistory> TransactionHistories { get; set; } = [];

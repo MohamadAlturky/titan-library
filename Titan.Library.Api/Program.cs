@@ -1,10 +1,14 @@
 using Titan.Library.Api.Infrastructure;
+using Titan.Library.Application;
+using Titan.Library.Common.EndPoints;
 using Titan.Library.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services
+    .AddInfrastructure(builder.Configuration)
+    .AddApplication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -15,5 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapEndpoints();
 
 app.Run();

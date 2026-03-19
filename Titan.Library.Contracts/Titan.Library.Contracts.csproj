@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Titan.Library.Contracts\Titan.Library.Contracts.csproj" />
       <ProjectReference Include="..\Titan.Library.Domain\Titan.Library.Domain.csproj" />
     </ItemGroup>
 
