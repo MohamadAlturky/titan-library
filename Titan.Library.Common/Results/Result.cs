@@ -24,7 +24,7 @@ public class Result<T> : Result
 
     public static Result<T> Success(T data, string messageCode)
     {
-        return new Result<T> { IsSuccess = true, MessageCode = messageCode };
+        return new Result<T> { IsSuccess = true, MessageCode = messageCode, Data = data };
     }
 
     public new static Result<T> Fail(string messageCode)

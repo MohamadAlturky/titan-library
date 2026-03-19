@@ -1,9 +1,12 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
+using Titan.Library.Domain.Caching;
 using Titan.Library.Domain.Users;
+using Titan.Library.Infrastructure.Caching;
 using Titan.Library.Infrastructure.Connectors;
 using Titan.Library.Infrastructure.Contexts;
 using Titan.Library.Infrastructure.Migrations;
@@ -29,6 +32,14 @@ public static class InfrastructureBootstrapper
                 $"Connection string '{connectionStringName}' was not found or is empty. Please check your configuration."
             );
         }
+
+        var redisConnection = configuration.GetConnectionString("RedisConnection")
+            ?? throw new InvalidOperationException("RedisConnection connection string is missing.");
+
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(redisConnection));
+
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddSingleton<IDbConnectionFactory>(_ => new PostgresDbConnectionFactory(
             connectionString

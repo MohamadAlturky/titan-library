@@ -8,13 +8,10 @@ using Titan.Library.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, config) =>
-    config.ReadFrom.Configuration(ctx.Configuration));
+builder.Host.UseSerilog((ctx, config) => config.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddOpenApi();
-builder.Services
-    .AddInfrastructure(builder.Configuration)
-    .AddApplication(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration).AddApplication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -25,5 +22,5 @@ app.UseHttpsRedirection();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-await app.UseSqlMigrations();
+// await app.UseSqlMigrations();
 app.Run();
