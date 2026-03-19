@@ -1,7 +1,10 @@
 using System.Data.Common;
 using Titan.Library.Domain.Books;
 using Titan.Library.Infrastructure.AdoExtensions;
+using Titan.Library.Infrastructure.Configurations;
 using Titan.Library.Infrastructure.Contexts;
+using C = Titan.Library.Infrastructure.Configurations.BookTableConfiguration.Columns;
+using T = Titan.Library.Infrastructure.Configurations.BookTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Repositories;
 
@@ -18,10 +21,10 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            INSERT INTO books (isbn, author_id, title)
+        command.CommandText = $"""
+            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title})
             VALUES (@Isbn, @AuthorId, @Title)
-            RETURNING id;
+            RETURNING {C.Id};
             """;
 
         command.AddParameters(
@@ -40,10 +43,10 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            UPDATE books
-            SET isbn = @Isbn, author_id = @AuthorId, title = @Title
-            WHERE id = @Id;
+        command.CommandText = $"""
+            UPDATE {T.Table}
+            SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title
+            WHERE {C.Id} = @Id;
             """;
 
         command.AddParameters(
@@ -63,7 +66,7 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "DELETE FROM books WHERE id = @Id;";
+        command.CommandText = $"DELETE FROM {T.Table} WHERE {C.Id} = @Id;";
 
         command.AddParameters(new { entity.Id });
 
@@ -74,7 +77,8 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "SELECT id, isbn, author_id, title, created_at FROM books;";
+        command.CommandText =
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table};";
 
         return await command.ExecuteListAsync(MapToBook);
     }
@@ -84,7 +88,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            "SELECT id, isbn, author_id, title, created_at FROM books WHERE id = @Id;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Id} = @Id;";
 
         command.AddParameters(new { Id = id });
 
@@ -96,7 +100,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            "SELECT id, isbn, author_id, title, created_at FROM books WHERE isbn = @Isbn;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Isbn} = @Isbn;";
 
         command.AddParameters(new { Isbn = isbn });
 
@@ -108,7 +112,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            "SELECT id, isbn, author_id, title, created_at FROM books WHERE title ILIKE @Title;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Title} ILIKE @Title;";
 
         command.AddParameters(new { Title = $"%{title}%" });
 
@@ -120,20 +124,23 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            "SELECT id, isbn, author_id, title, created_at FROM books WHERE author_id = @AuthorId;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId;";
 
         command.AddParameters(new { AuthorId = authorId });
 
         return await command.ExecuteListAsync(MapToBook);
     }
 
-    private static Book MapToBook(DbDataReader reader) =>
-        new()
+    private static Book MapToBook(DbDataReader reader)
+    {
+        var snapshot = new BookSnapshot
         {
-            Id = reader.GetInt32(reader.GetOrdinal("id")),
-            Isbn = reader.GetString(reader.GetOrdinal("isbn")),
-            AuthorId = reader.GetInt32(reader.GetOrdinal("author_id")),
-            Title = reader.GetString(reader.GetOrdinal("title")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
+            Id = reader.GetInt32(reader.GetOrdinal(C.Id)),
+            Isbn = reader.GetString(reader.GetOrdinal(C.Isbn)),
+            AuthorId = reader.GetInt32(reader.GetOrdinal(C.AuthorId)),
+            Title = reader.GetString(reader.GetOrdinal(C.Title)),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
         };
+        return Book.Reconstitute(snapshot);
+    }
 }

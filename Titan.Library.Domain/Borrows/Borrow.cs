@@ -22,6 +22,28 @@ public class Borrow : BaseEntity<int>
         ReturnedAt = DateTime.UtcNow;
     }
 
+    public BorrowSnapshot TakeSnapshot() =>
+        new()
+        {
+            Id = Id,
+            CustomerId = CustomerId,
+            BookId = BookId,
+            BorrowedAt = BorrowedAt,
+            ReturnedAt = ReturnedAt,
+            CreatedAt = CreatedAt,
+        };
+
+    public static Borrow Reconstitute(BorrowSnapshot snapshot) =>
+        new()
+        {
+            Id = snapshot.Id,
+            CustomerId = snapshot.CustomerId,
+            BookId = snapshot.BookId,
+            BorrowedAt = snapshot.BorrowedAt,
+            ReturnedAt = snapshot.ReturnedAt,
+            CreatedAt = snapshot.CreatedAt,
+        };
+
     public static Borrow Create(int customerId, int bookId) =>
         new()
         {

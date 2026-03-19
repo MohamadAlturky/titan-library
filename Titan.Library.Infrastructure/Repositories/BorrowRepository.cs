@@ -2,6 +2,8 @@ using System.Data.Common;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Infrastructure.AdoExtensions;
 using Titan.Library.Infrastructure.Contexts;
+using C = Titan.Library.Infrastructure.Configurations.BorrowTableConfiguration.Columns;
+using T = Titan.Library.Infrastructure.Configurations.BorrowTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Repositories;
 
@@ -18,10 +20,10 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            INSERT INTO borrows (customer_id, book_id, borrowed_at, created_at)
+        command.CommandText = $"""
+            INSERT INTO {T.Table} ({C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.CreatedAt})
             VALUES (@CustomerId, @BookId, @BorrowedAt, @CreatedAt)
-            RETURNING id;
+            RETURNING {C.Id};
             """;
 
         command.AddParameters(
@@ -41,10 +43,10 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            UPDATE borrows
-            SET returned_at = @ReturnedAt
-            WHERE id = @Id;
+        command.CommandText = $"""
+            UPDATE {T.Table}
+            SET {C.ReturnedAt} = @ReturnedAt
+            WHERE {C.Id} = @Id;
             """;
 
         command.AddParameters(new { entity.Id, entity.ReturnedAt });
@@ -56,7 +58,7 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "DELETE FROM borrows WHERE id = @Id;";
+        command.CommandText = $"DELETE FROM {T.Table} WHERE {C.Id} = @Id;";
 
         command.AddParameters(new { entity.Id });
 
@@ -68,7 +70,7 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            "SELECT id, customer_id, book_id, borrowed_at, returned_at, created_at FROM borrows;";
+            $"SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt} FROM {T.Table};";
 
         return await command.ExecuteListAsync(MapToBorrow);
     }
@@ -77,10 +79,10 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            SELECT id, customer_id, book_id, borrowed_at, returned_at, created_at
-            FROM borrows
-            WHERE id = @Id;
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            FROM {T.Table}
+            WHERE {C.Id} = @Id;
             """;
 
         command.AddParameters(new { Id = id });
@@ -92,10 +94,10 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            SELECT id, customer_id, book_id, borrowed_at, returned_at, created_at
-            FROM borrows
-            WHERE customer_id = @CustomerId;
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            FROM {T.Table}
+            WHERE {C.CustomerId} = @CustomerId;
             """;
 
         command.AddParameters(new { CustomerId = customerId });
@@ -107,10 +109,10 @@ public class BorrowRepository : IBorrowRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = """
-            SELECT id, customer_id, book_id, borrowed_at, returned_at, created_at
-            FROM borrows
-            WHERE customer_id = @CustomerId AND book_id = @BookId AND returned_at IS NULL
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            FROM {T.Table}
+            WHERE {C.CustomerId} = @CustomerId AND {C.BookId} = @BookId AND {C.ReturnedAt} IS NULL
             LIMIT 1;
             """;
 
@@ -121,17 +123,16 @@ public class BorrowRepository : IBorrowRepository
 
     private static Borrow MapToBorrow(DbDataReader reader)
     {
-        var returnedAtOrdinal = reader.GetOrdinal("returned_at");
-        return new Borrow
+        var returnedAtOrdinal = reader.GetOrdinal(C.ReturnedAt);
+        var snapshot = new BorrowSnapshot
         {
-            Id = reader.GetInt32(reader.GetOrdinal("id")),
-            CustomerId = reader.GetInt32(reader.GetOrdinal("customer_id")),
-            BookId = reader.GetInt32(reader.GetOrdinal("book_id")),
-            BorrowedAt = reader.GetDateTime(reader.GetOrdinal("borrowed_at")),
-            ReturnedAt = reader.IsDBNull(returnedAtOrdinal)
-                ? null
-                : reader.GetDateTime(returnedAtOrdinal),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
+            Id         = reader.GetInt32(reader.GetOrdinal(C.Id)),
+            CustomerId = reader.GetInt32(reader.GetOrdinal(C.CustomerId)),
+            BookId     = reader.GetInt32(reader.GetOrdinal(C.BookId)),
+            BorrowedAt = reader.GetDateTime(reader.GetOrdinal(C.BorrowedAt)),
+            ReturnedAt = reader.IsDBNull(returnedAtOrdinal) ? null : reader.GetDateTime(returnedAtOrdinal),
+            CreatedAt  = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
         };
+        return Borrow.Reconstitute(snapshot);
     }
 }

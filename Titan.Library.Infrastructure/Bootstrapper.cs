@@ -37,6 +37,7 @@ public static class InfrastructureBootstrapper
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
+        services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IBorrowRepository, BorrowRepository>();
         services.AddScoped<IBookTransactionHistoryRepository, BookTransactionHistoryRepository>();
         services.AddScoped<IDbMigrator, SqlDbMigrator>();

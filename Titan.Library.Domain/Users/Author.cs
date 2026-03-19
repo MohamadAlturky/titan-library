@@ -6,23 +6,29 @@ public class Author : User
 {
     public List<Book> Books { get; set; } = [];
 
-    public static Author Reconstitute(
-        int id,
-        string name,
-        string email,
-        string passwordHash,
-        string passwordSalt,
-        DateTime createdAt
-    )
+    public UserSnapshot TakeSnapshot() =>
+        new()
+        {
+            Id           = Id,
+            Name         = Name,
+            Email        = Email,
+            PasswordHash = PasswordHash,
+            PasswordSalt = PasswordSalt,
+            CreatedAt    = CreatedAt,
+            IsDeleted    = IsDeleted,
+        };
+
+    public static Author Reconstitute(UserSnapshot snapshot)
     {
         var a = new Author
         {
-            Id = id,
-            Name = name,
-            Email = email,
-            CreatedAt = createdAt,
+            Id        = snapshot.Id,
+            Name      = snapshot.Name,
+            Email     = snapshot.Email,
+            CreatedAt = snapshot.CreatedAt,
         };
-        a.RestorePassword(passwordHash, passwordSalt);
+        a.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
+        a.RestoreIsDeleted(snapshot.IsDeleted);
         return a;
     }
 }

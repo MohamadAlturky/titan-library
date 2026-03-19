@@ -14,6 +14,26 @@ public class Book : BaseEntity<int>
     public List<Borrow> Borrows { get; set; } = [];
     public List<BookQuantityTransactionHistory> TransactionHistories { get; set; } = [];
 
+    public BookSnapshot TakeSnapshot() =>
+        new()
+        {
+            Id = Id,
+            Isbn = Isbn,
+            AuthorId = AuthorId,
+            Title = Title,
+            CreatedAt = CreatedAt,
+        };
+
+    public static Book Reconstitute(BookSnapshot snapshot) =>
+        new()
+        {
+            Id = snapshot.Id,
+            Isbn = snapshot.Isbn,
+            AuthorId = snapshot.AuthorId,
+            Title = snapshot.Title,
+            CreatedAt = snapshot.CreatedAt,
+        };
+
     public void AddToStock(int amount)
     {
         if (amount <= 0)
@@ -41,17 +61,3 @@ public class Book : BaseEntity<int>
         ) > 0;
 }
 
-public class BookQuantityTransactionHistory : BaseEntity<int>
-{
-    public int Amount { get; set; }
-    public TransactionType TransactionType { get; set; }
-    public int BookId { get; set; }
-    public Book Book { get; set; } = null!;
-}
-
-public enum TransactionType
-{
-    AddingToTheStore = 1,
-    BookReturned = 2,
-    BookBorrowed = 3,
-}

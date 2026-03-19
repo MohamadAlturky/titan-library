@@ -1,11 +1,7 @@
-using Titan.Library.Domain.Borrows;
-
 namespace Titan.Library.Domain.Users;
 
-public class Customer : User
+public class Admin : User
 {
-    public List<Borrow> Borrows { get; set; } = [];
-
     public UserSnapshot TakeSnapshot() =>
         new()
         {
@@ -18,20 +14,17 @@ public class Customer : User
             IsDeleted = IsDeleted,
         };
 
-    public static Customer Reconstitute(UserSnapshot snapshot)
+    public static Admin Reconstitute(UserSnapshot snapshot)
     {
-        var c = new Customer
+        var a = new Admin
         {
             Id = snapshot.Id,
             Name = snapshot.Name,
             Email = snapshot.Email,
             CreatedAt = snapshot.CreatedAt,
         };
-        c.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
-        c.RestoreIsDeleted(snapshot.IsDeleted);
-        return c;
+        a.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
+        a.RestoreIsDeleted(snapshot.IsDeleted);
+        return a;
     }
-
-    public bool HasActiveBorrowForBook(int bookId) =>
-        Borrows.Any(b => b.BookId == bookId && !b.IsReturned);
 }

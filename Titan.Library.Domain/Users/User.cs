@@ -29,6 +29,12 @@ public class User : BaseEntity<int>
         return RandomNumberGenerator.GetBytes(32);
     }
 
+    public bool IsDeleted { get; private set; }
+
+    public void Delete() => IsDeleted = true;
+
+    protected void RestoreIsDeleted(bool isDeleted) => IsDeleted = isDeleted;
+
     protected void RestorePassword(string passwordHash, string passwordSalt)
     {
         PasswordHash = passwordHash;

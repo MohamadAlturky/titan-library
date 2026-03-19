@@ -1,5 +1,7 @@
 using Titan.Library.Infrastructure.Connectors;
 using Titan.Library.Infrastructure.Migrations.Abstractions;
+using C = Titan.Library.Infrastructure.Configurations.UserTableConfiguration.Columns;
+using T = Titan.Library.Infrastructure.Configurations.UserTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Migrations;
 
@@ -12,18 +14,17 @@ public class CreateUsersTableMigration(IDbConnectionFactory dbConnectionFactory)
     {
         await using var command = Connection.CreateCommand();
 
-        command.CommandText = """
-            CREATE TABLE IF NOT EXISTS users (
-                id            SERIAL PRIMARY KEY,
-                name          TEXT NOT NULL,
-                email         TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                password_salt TEXT NOT NULL,
-                user_type     VARCHAR(20) NOT NULL,
-                created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        command.CommandText = $"""
+            CREATE TABLE IF NOT EXISTS {T.Table} (
+                {C.Id}           SERIAL PRIMARY KEY,
+                {C.Name}         TEXT NOT NULL,
+                {C.Email}        TEXT NOT NULL UNIQUE,
+                {C.PasswordHash} TEXT NOT NULL,
+                {C.PasswordSalt} TEXT NOT NULL,
+                {C.CreatedAt}    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                {C.IsDeleted}    BOOLEAN NOT NULL DEFAULT FALSE
             );
-            CREATE INDEX IF NOT EXISTS idx_users_email     ON users(email);
-            CREATE INDEX IF NOT EXISTS idx_users_user_type ON users(user_type);
+            CREATE INDEX IF NOT EXISTS idx_users_email ON {T.Table}({C.Email});
             """;
 
         await command.ExecuteNonQueryAsync();
