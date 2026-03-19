@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using Serilog;
 using Titan.Library.Api.Infrastructure;
 using Titan.Library.Application;
 using Titan.Library.Common.EndPoints;
@@ -6,6 +7,9 @@ using Titan.Library.Endpoints;
 using Titan.Library.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, config) =>
+    config.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddOpenApi();
 builder.Services
