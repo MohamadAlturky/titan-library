@@ -1,10 +1,13 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Titan.Library.Domain.Books;
 using Titan.Library.Infrastructure.Connectors;
+using Titan.Library.Infrastructure.Contexts;
 using Titan.Library.Infrastructure.Migrations;
 using Titan.Library.Infrastructure.Migrations.Abstractions;
 using Titan.Library.Infrastructure.Migrations.Utils;
+using Titan.Library.Infrastructure.Repositories;
 
 namespace Titan.Library.Infrastructure;
 
@@ -28,6 +31,8 @@ public static class InfrastructureBootstrapper
         services.AddSingleton<IDbConnectionFactory>(_ => new PostgresDbConnectionFactory(
             connectionString
         ));
+        services.AddScoped<ISqlDbContext, SqlDbContext>();
+        services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IDbMigrator, SqlDbMigrator>();
         services.RegisterSqlMigrations();
 

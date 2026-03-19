@@ -8,5 +8,5 @@ public interface IBaseRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
     Task Update(TEntity entity);
     Task Delete(TEntity entity);
     Task<IEnumerable<TEntity>> ToList();
-    Task<TEntity> FindById(TKey id);
+    Task<TEntity?> FindById(TKey id);
 }

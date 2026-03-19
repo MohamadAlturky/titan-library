@@ -1,6 +1,8 @@
+using Scalar.AspNetCore;
 using Titan.Library.Api.Infrastructure;
 using Titan.Library.Application;
 using Titan.Library.Common.EndPoints;
+using Titan.Library.Endpoints;
 using Titan.Library.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,14 +14,12 @@ builder.Services
 
 var app = builder.Build();
 
-await app.UseSqlMigrations();
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapGet("/version", () => "1.0.1");
+app.MapEndpoints(typeof(EndpointsAssemblyReference).Assembly);
 
 app.UseHttpsRedirection();
+app.MapOpenApi();
+app.MapScalarApiReference();
 
-app.MapEndpoints();
-
+await app.UseSqlMigrations();
 app.Run();
