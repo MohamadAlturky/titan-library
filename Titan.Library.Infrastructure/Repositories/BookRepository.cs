@@ -1,9 +1,7 @@
-using System.Data;
 using System.Data.Common;
 using Titan.Library.Domain.Books;
-using Titan.Library.Infrastructure.Connectors;
-using Titan.Library.Infrastructure.Contexts;
 using Titan.Library.Infrastructure.AdoExtensions;
+using Titan.Library.Infrastructure.Contexts;
 
 namespace Titan.Library.Infrastructure.Repositories;
 
@@ -18,23 +16,23 @@ public class BookRepository : IBookRepository
 
     public async Task<int> Add(Book entity)
     {
-        // Note: Assuming _dbContext exposes a way to create a command. 
-        // Adjust to `_dbContext.Connection.CreateCommand()` if needed based on your interface.
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = @"
-            INSERT INTO Books (Isbn, AuthorId, Title) 
-            VALUES (@Isbn, @AuthorId, @Title);
-            SELECT CAST(SCOPE_IDENTITY() as int);";
+        command.CommandText = """
+            INSERT INTO books (isbn, author_id, title)
+            VALUES (@Isbn, @AuthorId, @Title)
+            RETURNING id;
+            """;
 
-        command.AddParameters(new
-        {
-            entity.Isbn,
-            entity.AuthorId,
-            entity.Title
-        });
+        command.AddParameters(
+            new
+            {
+                entity.Isbn,
+                entity.AuthorId,
+                entity.Title,
+            }
+        );
 
-        // Using your async scalar extension to get the newly generated ID
         return await command.ExecuteScalarValueAsync<int>();
     }
 
@@ -42,18 +40,21 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = @"
-            UPDATE Books 
-            SET Isbn = @Isbn, AuthorId = @AuthorId, Title = @Title 
-            WHERE Id = @Id;";
+        command.CommandText = """
+            UPDATE books
+            SET isbn = @Isbn, author_id = @AuthorId, title = @Title
+            WHERE id = @Id;
+            """;
 
-        command.AddParameters(new
-        {
-            entity.Id, // Inherited from BaseEntity<int>
-            entity.Isbn,
-            entity.AuthorId,
-            entity.Title
-        });
+        command.AddParameters(
+            new
+            {
+                entity.Id,
+                entity.Isbn,
+                entity.AuthorId,
+                entity.Title,
+            }
+        );
 
         await command.ExecuteNonQuerySafeAsync();
     }
@@ -62,7 +63,7 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "DELETE FROM Books WHERE Id = @Id;";
+        command.CommandText = "DELETE FROM books WHERE id = @Id;";
 
         command.AddParameters(new { entity.Id });
 
@@ -73,7 +74,7 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "SELECT Id, Isbn, AuthorId, Title FROM Books;";
+        command.CommandText = "SELECT id, isbn, author_id, title, created_at FROM books;";
 
         return await command.ExecuteListAsync(MapToBook);
     }
@@ -82,25 +83,57 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = "SELECT Id, Isbn, AuthorId, Title FROM Books WHERE Id = @Id;";
+        command.CommandText =
+            "SELECT id, isbn, author_id, title, created_at FROM books WHERE id = @Id;";
 
         command.AddParameters(new { Id = id });
 
-        var book = await command.ExecuteSingleOrDefaultAsync(MapToBook);
-
-        return book;
+        return await command.ExecuteSingleOrDefaultAsync(MapToBook);
     }
 
-    // --- Helper Methods ---
-
-    private static Book MapToBook(DbDataReader reader)
+    public async Task<Book?> FindByIsbn(string isbn)
     {
-        return new Book
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-            Isbn = reader.GetString(reader.GetOrdinal("Isbn")),
-            AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-            Title = reader.GetString(reader.GetOrdinal("Title"))
-        };
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText =
+            "SELECT id, isbn, author_id, title, created_at FROM books WHERE isbn = @Isbn;";
+
+        command.AddParameters(new { Isbn = isbn });
+
+        return await command.ExecuteSingleOrDefaultAsync(MapToBook);
     }
+
+    public async Task<IEnumerable<Book>> FindByTitle(string title)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText =
+            "SELECT id, isbn, author_id, title, created_at FROM books WHERE title ILIKE @Title;";
+
+        command.AddParameters(new { Title = $"%{title}%" });
+
+        return await command.ExecuteListAsync(MapToBook);
+    }
+
+    public async Task<IEnumerable<Book>> FindByAuthorId(int authorId)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText =
+            "SELECT id, isbn, author_id, title, created_at FROM books WHERE author_id = @AuthorId;";
+
+        command.AddParameters(new { AuthorId = authorId });
+
+        return await command.ExecuteListAsync(MapToBook);
+    }
+
+    private static Book MapToBook(DbDataReader reader) =>
+        new()
+        {
+            Id = reader.GetInt32(reader.GetOrdinal("id")),
+            Isbn = reader.GetString(reader.GetOrdinal("isbn")),
+            AuthorId = reader.GetInt32(reader.GetOrdinal("author_id")),
+            Title = reader.GetString(reader.GetOrdinal("title")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
+        };
 }

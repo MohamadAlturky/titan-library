@@ -2,6 +2,8 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Titan.Library.Domain.Books;
+using Titan.Library.Domain.Borrows;
+using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.Connectors;
 using Titan.Library.Infrastructure.Contexts;
 using Titan.Library.Infrastructure.Migrations;
@@ -33,6 +35,10 @@ public static class InfrastructureBootstrapper
         ));
         services.AddScoped<ISqlDbContext, SqlDbContext>();
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IAuthorRepository, AuthorRepository>();
+        services.AddScoped<IBorrowRepository, BorrowRepository>();
+        services.AddScoped<IBookTransactionHistoryRepository, BookTransactionHistoryRepository>();
         services.AddScoped<IDbMigrator, SqlDbMigrator>();
         services.RegisterSqlMigrations();
 
@@ -43,7 +49,8 @@ public static class InfrastructureBootstrapper
     {
         var migrationType = typeof(ISqlMigration);
 
-        var implementations = Assembly.GetExecutingAssembly()
+        var implementations = Assembly
+            .GetExecutingAssembly()
             .GetTypes()
             .Where(t => migrationType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 

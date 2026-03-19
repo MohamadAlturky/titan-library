@@ -53,6 +53,7 @@ public class CreateBookCommandHandler
         {
             Isbn = request.Isbn,
             Title = request.Title,
+            AuthorId = request.AuthorId,
             CreatedAt = DateTime.Now,
         };
         var bookId = await _bookRepository.Add(book);

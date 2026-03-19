@@ -29,6 +29,12 @@ public class User : BaseEntity<int>
         return RandomNumberGenerator.GetBytes(32);
     }
 
+    protected void RestorePassword(string passwordHash, string passwordSalt)
+    {
+        PasswordHash = passwordHash;
+        PasswordSalt = passwordSalt;
+    }
+
     private static string ComputeHash(string password, byte[] salt)
     {
         var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);

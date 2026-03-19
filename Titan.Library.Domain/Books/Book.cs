@@ -13,6 +13,32 @@ public class Book : BaseEntity<int>
     public Author Author { get; set; } = null!;
     public List<Borrow> Borrows { get; set; } = [];
     public List<BookQuantityTransactionHistory> TransactionHistories { get; set; } = [];
+
+    public void AddToStock(int amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be positive.", nameof(amount));
+        TransactionHistories.Add(
+            new BookQuantityTransactionHistory
+            {
+                Amount = amount,
+                TransactionType = TransactionType.AddingToTheStore,
+                BookId = Id,
+                CreatedAt = DateTime.UtcNow,
+            }
+        );
+    }
+
+    public bool IsAvailable() =>
+        TransactionHistories.Sum(t =>
+            t.TransactionType switch
+            {
+                TransactionType.AddingToTheStore => t.Amount,
+                TransactionType.BookReturned => t.Amount,
+                TransactionType.BookBorrowed => -t.Amount,
+                _ => 0,
+            }
+        ) > 0;
 }
 
 public class BookQuantityTransactionHistory : BaseEntity<int>
