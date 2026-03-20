@@ -20,6 +20,8 @@ app.MapGet("/version", () => "1.0.1");
 app.MapEndpoints(typeof(EndpointsAssemblyReference).Assembly);
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapOpenApi();
 app.MapScalarApiReference();
 

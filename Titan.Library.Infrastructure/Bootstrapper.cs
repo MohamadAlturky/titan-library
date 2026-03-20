@@ -1,12 +1,17 @@
 using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
+using Titan.Library.Domain.Auth;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Domain.Caching;
 using Titan.Library.Domain.Messages;
 using Titan.Library.Domain.Users;
+using Titan.Library.Infrastructure.Auth;
 using Titan.Library.Infrastructure.Caching;
 using Titan.Library.Infrastructure.Connectors;
 using Titan.Library.Infrastructure.Contexts;
@@ -37,6 +42,8 @@ public static class InfrastructureBootstrapper
         var redisConnection = configuration.GetConnectionString("RedisConnection")
             ?? throw new InvalidOperationException("RedisConnection connection string is missing.");
 
+        services.AddJwtAuth(configuration);
+
         services.AddSingleton<IConnectionMultiplexer>(
             ConnectionMultiplexer.Connect(redisConnection));
 
@@ -57,6 +64,35 @@ public static class InfrastructureBootstrapper
         services.RegisterSqlMigrations();
 
         return services;
+    }
+
+    private static void AddJwtAuth(this IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+            ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.AddScoped<IJwtGenerator, JwtGenerator>();
+
+        var key = Encoding.UTF8.GetBytes(jwtOptions.Secret);
+
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(opts =>
+            {
+                opts.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+
+        services.AddAuthorization();
     }
 
     private static void RegisterSqlMigrations(this IServiceCollection services)
