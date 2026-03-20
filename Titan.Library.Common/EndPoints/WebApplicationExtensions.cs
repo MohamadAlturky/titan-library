@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Titan.Library.Common.EndPoints;
 
 namespace Titan.Library.Common.EndPoints;
@@ -31,7 +32,7 @@ public static class WebApplicationExtensions
 
         foreach (var type in endpointGroupTypes)
         {
-            if (Activator.CreateInstance(type) is EndpointGroupBase instance)
+            if (ActivatorUtilities.CreateInstance(app.Services, type) is EndpointGroupBase instance)
             {
                 instance.Map(app);
             }

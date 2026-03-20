@@ -8,8 +8,16 @@ public abstract class EndpointGroupBase
 {
     public abstract void Map(WebApplication app);
 
-    protected static IResult HandleApiResponse<T>(Result<T> result)
+    protected static async Task<IResult> HandleApiResponseAsync<T>(
+        IApiResponseResolver apiMessageResolver,
+        Result<T> result,
+        CancellationToken cancellationToken = default
+    )
     {
+        var message = await apiMessageResolver.ResolveAsync(
+            result.MessageCode ?? string.Empty,
+            cancellationToken
+        );
         if (result.IsSuccess)
         {
             return TypedResults.Ok(
@@ -17,7 +25,7 @@ public abstract class EndpointGroupBase
                 {
                     Data = result.Data,
                     Success = result.IsSuccess,
-                    Message = result.MessageCode,
+                    Message = message,
                 }
             );
         }
@@ -28,7 +36,7 @@ public abstract class EndpointGroupBase
                 {
                     Data = result.Data,
                     Success = result.IsSuccess,
-                    Message = result.MessageCode,
+                    Message = message,
                 }
             );
         }

@@ -43,35 +43,43 @@ public class AuthorEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
-    private static async Task<IResult> CreateAuthorAsync(
+    private async Task<IResult> CreateAuthorAsync(
         [FromServices] ISender sender,
-        [FromBody] CreateAuthorCommand request)
+        [FromServices] IApiResponseResolver apiMessageResolver,
+        [FromBody] CreateAuthorCommand request
+    )
     {
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetAuthorsAsync(
+    private async Task<IResult> GetAuthorsAsync(
         [FromServices] ISender sender,
-        [AsParameters] GetAuthorsQuery query)
+        [FromServices] IApiResponseResolver apiMessageResolver,
+        [AsParameters] GetAuthorsQuery query
+    )
     {
         var result = await sender.Send(query);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetAuthorByIdAsync(
+    private async Task<IResult> GetAuthorByIdAsync(
         [FromServices] ISender sender,
-        [FromRoute] int id)
+        [FromServices] IApiResponseResolver apiMessageResolver,
+        [FromRoute] int id
+    )
     {
         var result = await sender.Send(new GetAuthorByIdQuery { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> DeleteAuthorAsync(
+    private async Task<IResult> DeleteAuthorAsync(
         [FromServices] ISender sender,
-        [FromRoute] int id)
+        [FromServices] IApiResponseResolver apiMessageResolver,
+        [FromRoute] int id
+    )
     {
         var result = await sender.Send(new DeleteAuthorCommand { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }

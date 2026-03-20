@@ -1,6 +1,3 @@
 namespace Titan.Library.Endpoints;
 
-public class EndpointsAssemblyReference
-{
-    
-}
+public class EndpointsAssemblyReference { }

@@ -64,70 +64,77 @@ public class BookEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
-    private static async Task<IResult> CreateBookAsync(
+    private async Task<IResult> CreateBookAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromBody] CreateBookCommand request
     )
     {
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetBooksAsync(
+    private async Task<IResult> GetBooksAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [AsParameters] GetBooksQuery query
     )
     {
         var result = await sender.Send(query);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetBookByIdAsync(
+    private async Task<IResult> GetBookByIdAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id
     )
     {
         var result = await sender.Send(new GetBookByIdQuery { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetBookByIsbnAsync(
+    private async Task<IResult> GetBookByIsbnAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] string isbn
     )
     {
         var result = await sender.Send(new GetBookByIsbnQuery { Isbn = isbn });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> UpdateBookAsync(
+    private async Task<IResult> UpdateBookAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id,
         [FromBody] UpdateBookCommand request
     )
     {
         request.Id = id;
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> DeleteBookAsync(
+    private async Task<IResult> DeleteBookAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id
     )
     {
         var result = await sender.Send(new DeleteBookCommand { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> AddBookToStockAsync(
+    private async Task<IResult> AddBookToStockAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id,
         [FromBody] AddBookToStockCommand request
     )
     {
         request.BookId = id;
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }

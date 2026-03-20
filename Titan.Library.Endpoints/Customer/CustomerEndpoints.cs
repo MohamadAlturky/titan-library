@@ -43,39 +43,43 @@ public class CustomerEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
-    private static async Task<IResult> CreateCustomerAsync(
+    private async Task<IResult> CreateCustomerAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromBody] CreateCustomerCommand request
     )
     {
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetCustomersAsync(
+    private async Task<IResult> GetCustomersAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [AsParameters] GetCustomersQuery query
     )
     {
         var result = await sender.Send(query);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetCustomerByIdAsync(
+    private async Task<IResult> GetCustomerByIdAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id
     )
     {
         var result = await sender.Send(new GetCustomerByIdQuery { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> DeleteCustomerAsync(
+    private async Task<IResult> DeleteCustomerAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int id
     )
     {
         var result = await sender.Send(new DeleteCustomerCommand { Id = id });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }

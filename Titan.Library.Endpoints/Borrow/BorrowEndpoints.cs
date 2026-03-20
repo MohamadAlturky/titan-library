@@ -43,39 +43,43 @@ public class BorrowEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
-    private static async Task<IResult> BorrowBookAsync(
+    private async Task<IResult> BorrowBookAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromBody] BorrowBookCommand request
     )
     {
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> ReturnBookAsync(
+    private async Task<IResult> ReturnBookAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromBody] ReturnBookCommand request
     )
     {
         var result = await sender.Send(request);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetBorrowsAsync(
+    private async Task<IResult> GetBorrowsAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [AsParameters] GetBorrowsQuery query
     )
     {
         var result = await sender.Send(query);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetBorrowsByCustomerAsync(
+    private async Task<IResult> GetBorrowsByCustomerAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromRoute] int customerId
     )
     {
         var result = await sender.Send(new GetBorrowsByCustomerQuery { CustomerId = customerId });
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }

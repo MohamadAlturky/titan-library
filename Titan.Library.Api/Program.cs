@@ -12,6 +12,7 @@ builder.Host.UseSerilog((ctx, config) => config.ReadFrom.Configuration(ctx.Confi
 
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration).AddApplication(builder.Configuration);
+builder.Services.AddScoped<IApiResponseResolver, ApiResponseResolver>();
 
 var app = builder.Build();
 
@@ -22,5 +23,6 @@ app.UseHttpsRedirection();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-// await app.UseSqlMigrations();
+await app.UseSqlMigrations();
+await app.UseMessageKeysSeeder();
 app.Run();

@@ -5,6 +5,7 @@ using StackExchange.Redis;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Domain.Caching;
+using Titan.Library.Domain.Messages;
 using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.Caching;
 using Titan.Library.Infrastructure.Connectors;
@@ -51,6 +52,7 @@ public static class InfrastructureBootstrapper
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IBorrowRepository, BorrowRepository>();
         services.AddScoped<IBookTransactionHistoryRepository, BookTransactionHistoryRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IDbMigrator, SqlDbMigrator>();
         services.RegisterSqlMigrations();
 

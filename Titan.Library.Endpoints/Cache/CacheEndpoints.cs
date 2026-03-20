@@ -32,21 +32,23 @@ public class CacheEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
-    private static async Task<IResult> CreateCacheRecordAsync(
+    private async Task<IResult> CreateCacheRecordAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [FromBody] CreateCacheRecordCommand command
     )
     {
         var result = await sender.Send(command);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 
-    private static async Task<IResult> GetCacheRecordsAsync(
+    private async Task<IResult> GetCacheRecordsAsync(
         [FromServices] ISender sender,
+        [FromServices] IApiResponseResolver apiMessageResolver,
         [AsParameters] GetCacheRecordsQuery query
     )
     {
         var result = await sender.Send(query);
-        return HandleApiResponse(result);
+        return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }
