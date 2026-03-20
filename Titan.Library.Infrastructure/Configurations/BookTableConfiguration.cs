@@ -11,5 +11,6 @@ public static class BookTableConfiguration
         public const string AuthorId = "author_id";
         public const string Title = "title";
         public const string CreatedAt = "created_at";
+        public const string IsAvailable = "is_available";
     }
 }

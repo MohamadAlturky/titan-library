@@ -32,19 +32,26 @@ public class ReturnBookCommandHandler : BaseCommandHandler<ReturnBookCommand, Bo
         new ReturnBookCommandValidator();
 
     private readonly IBorrowRepository _borrowRepository;
-    private readonly IBookTransactionHistoryRepository _historyRepository;
+    private readonly IBookRepository _bookRepository;
 
     public ReturnBookCommandHandler(
         IBorrowRepository borrowRepository,
-        IBookTransactionHistoryRepository historyRepository)
+        IBookRepository bookRepository
+    )
     {
         _borrowRepository = borrowRepository;
-        _historyRepository = historyRepository;
+        _bookRepository = bookRepository;
     }
 
-    protected override async Task<Result<BorrowDto>> InnerHandle(ReturnBookCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<BorrowDto>> InnerHandle(
+        ReturnBookCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var borrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(request.CustomerId, request.BookId);
+        var borrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(
+            request.CustomerId,
+            request.BookId
+        );
         if (borrow is null)
             return Result<BorrowDto>.Fail(ApplicationMessageKeys.BORROW_NOT_FOUND);
 
@@ -54,16 +61,18 @@ public class ReturnBookCommandHandler : BaseCommandHandler<ReturnBookCommand, Bo
         borrow.Return();
         await _borrowRepository.Update(borrow);
 
-        await _historyRepository.Add(new BookQuantityTransactionHistory
+        var book = await _bookRepository.FindById(request.BookId);
+        if (book is not null)
         {
-            BookId          = request.BookId,
-            Amount          = 1,
-            TransactionType = TransactionType.BookReturned,
-            CreatedAt       = DateTime.UtcNow
-        });
+            book.IsAvailable = true;
+            await _bookRepository.Update(book);
+        }
 
         var borrowDto = BorrowDto.FromEntity(borrow);
 
-        return Result<BorrowDto>.Success(borrowDto, ApplicationMessageKeys.BOOK_RETURNED_SUCCESSFULLY);
+        return Result<BorrowDto>.Success(
+            borrowDto,
+            ApplicationMessageKeys.BOOK_RETURNED_SUCCESSFULLY
+        );
     }
 }

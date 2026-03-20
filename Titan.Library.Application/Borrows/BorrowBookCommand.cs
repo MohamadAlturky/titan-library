@@ -35,18 +35,15 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
     private readonly ICustomerRepository _customerRepository;
     private readonly IBookRepository _bookRepository;
     private readonly IBorrowRepository _borrowRepository;
-    private readonly IBookTransactionHistoryRepository _historyRepository;
 
     public BorrowBookCommandHandler(
         ICustomerRepository customerRepository,
         IBookRepository bookRepository,
-        IBorrowRepository borrowRepository,
-        IBookTransactionHistoryRepository historyRepository)
+        IBorrowRepository borrowRepository)
     {
         _customerRepository = customerRepository;
         _bookRepository = bookRepository;
         _borrowRepository = borrowRepository;
-        _historyRepository = historyRepository;
     }
 
     protected override async Task<Result<BorrowDto>> InnerHandle(BorrowBookCommand request, CancellationToken cancellationToken)
@@ -59,10 +56,7 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
         if (book is null)
             return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_NOT_FOUND);
 
-        var histories = await _historyRepository.FindByBookId(book.Id);
-        book.TransactionHistories = histories.ToList();
-
-        if (!book.IsAvailable())
+        if (!book.IsAvailable)
             return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_NOT_AVAILABLE);
 
         var existingBorrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(request.CustomerId, request.BookId);
@@ -73,13 +67,8 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
         var borrowId = await _borrowRepository.Add(borrow);
         borrow.Id = borrowId;
 
-        await _historyRepository.Add(new Domain.Books.BookQuantityTransactionHistory
-        {
-            BookId          = request.BookId,
-            Amount          = 1,
-            TransactionType = Domain.Books.TransactionType.BookBorrowed,
-            CreatedAt       = DateTime.UtcNow
-        });
+        book.IsAvailable = false;
+        await _bookRepository.Update(book);
 
         var borrowDto = BorrowDto.FromEntity(borrow);
 

@@ -22,8 +22,8 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title})
-            VALUES (@Isbn, @AuthorId, @Title)
+            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title}, {C.IsAvailable})
+            VALUES (@Isbn, @AuthorId, @Title, @IsAvailable)
             RETURNING {C.Id};
             """;
 
@@ -33,6 +33,7 @@ public class BookRepository : IBookRepository
                 entity.Isbn,
                 entity.AuthorId,
                 entity.Title,
+                entity.IsAvailable,
             }
         );
 
@@ -45,7 +46,7 @@ public class BookRepository : IBookRepository
 
         command.CommandText = $"""
             UPDATE {T.Table}
-            SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title
+            SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title, {C.IsAvailable} = @IsAvailable
             WHERE {C.Id} = @Id;
             """;
 
@@ -56,6 +57,7 @@ public class BookRepository : IBookRepository
                 entity.Isbn,
                 entity.AuthorId,
                 entity.Title,
+                entity.IsAvailable,
             }
         );
 
@@ -78,7 +80,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table};";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table};";
 
         return await command.ExecuteListAsync(MapToBook);
     }
@@ -88,7 +90,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Id} = @Id;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Id} = @Id;";
 
         command.AddParameters(new { Id = id });
 
@@ -100,7 +102,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Isbn} = @Isbn;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Isbn} = @Isbn;";
 
         command.AddParameters(new { Isbn = isbn });
 
@@ -112,7 +114,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.Title} ILIKE @Title;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Title} ILIKE @Title;";
 
         command.AddParameters(new { Title = $"%{title}%" });
 
@@ -124,7 +126,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId;";
 
         command.AddParameters(new { AuthorId = authorId });
 
@@ -140,6 +142,7 @@ public class BookRepository : IBookRepository
             AuthorId = reader.GetInt32(reader.GetOrdinal(C.AuthorId)),
             Title = reader.GetString(reader.GetOrdinal(C.Title)),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
+            IsAvailable = reader.GetBoolean(reader.GetOrdinal(C.IsAvailable)),
         };
         return Book.Reconstitute(snapshot);
     }

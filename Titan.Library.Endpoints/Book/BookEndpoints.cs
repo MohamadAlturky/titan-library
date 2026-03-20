@@ -56,12 +56,6 @@ public class BookEndpoints : EndpointGroupBase
             .Produces(StatusCodes.Status200OK, typeof(bool))
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
 
-        group
-            .MapPost("/{id}/stock", AddBookToStockAsync)
-            .WithName(nameof(AddBookToStockAsync))
-            .WithSummary("Add stock to a Book")
-            .Produces(StatusCodes.Status200OK, typeof(bool))
-            .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
     }
 
     private async Task<IResult> CreateBookAsync(
@@ -123,18 +117,6 @@ public class BookEndpoints : EndpointGroupBase
     )
     {
         var result = await sender.Send(new DeleteBookCommand { Id = id });
-        return await HandleApiResponseAsync(apiMessageResolver, result);
-    }
-
-    private async Task<IResult> AddBookToStockAsync(
-        [FromServices] ISender sender,
-        [FromServices] IApiResponseResolver apiMessageResolver,
-        [FromRoute] int id,
-        [FromBody] AddBookToStockCommand request
-    )
-    {
-        request.BookId = id;
-        var result = await sender.Send(request);
         return await HandleApiResponseAsync(apiMessageResolver, result);
     }
 }

@@ -9,10 +9,10 @@ public class Book : BaseEntity<int>
     public string Isbn { get; set; } = string.Empty;
     public int AuthorId { get; set; }
     public string Title { get; set; } = string.Empty;
+    public bool IsAvailable { get; set; }
 
     public Author Author { get; set; } = null!;
     public List<Borrow> Borrows { get; set; } = [];
-    public List<BookQuantityTransactionHistory> TransactionHistories { get; set; } = [];
 
     public BookSnapshot TakeSnapshot() =>
         new()
@@ -22,6 +22,7 @@ public class Book : BaseEntity<int>
             AuthorId = AuthorId,
             Title = Title,
             CreatedAt = CreatedAt,
+            IsAvailable = IsAvailable,
         };
 
     public static Book Reconstitute(BookSnapshot snapshot) =>
@@ -32,32 +33,7 @@ public class Book : BaseEntity<int>
             AuthorId = snapshot.AuthorId,
             Title = snapshot.Title,
             CreatedAt = snapshot.CreatedAt,
+            IsAvailable = snapshot.IsAvailable,
         };
-
-    public void AddToStock(int amount)
-    {
-        if (amount <= 0)
-            throw new ArgumentException("Amount must be positive.", nameof(amount));
-        TransactionHistories.Add(
-            new BookQuantityTransactionHistory
-            {
-                Amount = amount,
-                TransactionType = TransactionType.AddingToTheStore,
-                BookId = Id,
-                CreatedAt = DateTime.UtcNow,
-            }
-        );
-    }
-
-    public bool IsAvailable() =>
-        TransactionHistories.Sum(t =>
-            t.TransactionType switch
-            {
-                TransactionType.AddingToTheStore => t.Amount,
-                TransactionType.BookReturned => t.Amount,
-                TransactionType.BookBorrowed => -t.Amount,
-                _ => 0,
-            }
-        ) > 0;
 }
 
