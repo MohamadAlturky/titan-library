@@ -54,8 +54,7 @@ public class CreateAuthorCommandHandler : BaseCommandHandler<CreateAuthorCommand
         var authorId = await _authorRepository.Add(author);
         author.Id = authorId;
 
-        var authorDto = new AuthorDto();
-        authorDto.Map(author);
+        var authorDto = AuthorDto.FromEntity(author);
 
         return Result<AuthorDto>.Success(authorDto, ApplicationMessageKeys.AUTHOR_CREATED_SUCCESSFULLY);
     }

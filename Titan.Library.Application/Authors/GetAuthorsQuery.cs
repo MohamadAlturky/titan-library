@@ -21,14 +21,7 @@ public class GetAuthorsQueryHandler : IQueryHandler<GetAuthorsQuery, List<Author
     public async Task<Result<List<AuthorDto>>> Handle(GetAuthorsQuery request, CancellationToken cancellationToken)
     {
         var result = await _authorRepository.ToList();
-        var response = new List<AuthorDto>();
-
-        foreach (var author in result)
-        {
-            var authorDto = new AuthorDto();
-            authorDto.Map(author);
-            response.Add(authorDto);
-        }
+        var response = result.Select(AuthorDto.FromEntity).ToList();
 
         return Result<List<AuthorDto>>.Success(response, ApplicationMessageKeys.AUTHORS_RETRIEVED_SUCCESSFULLY);
     }

@@ -21,14 +21,7 @@ public class GetBooksQueryHandler : IQueryHandler<GetBooksQuery, List<BookDto>>
     public async Task<Result<List<BookDto>>> Handle(GetBooksQuery request, CancellationToken cancellationToken)
     {
         var result = await _bookRepository.ToList();
-        var response = new List<BookDto>();
-
-        foreach (var book in result)
-        {
-            var bookDto = new BookDto();
-            bookDto.Map(book);
-            response.Add(bookDto);
-        }
+        var response = result.Select(BookDto.FromEntity).ToList();
 
         return Result<List<BookDto>>.Success(response, ApplicationMessageKeys.BOOKS_LIST_RETREIVED_SUCCESSFULLY);
     }

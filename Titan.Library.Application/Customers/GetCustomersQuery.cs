@@ -21,14 +21,7 @@ public class GetCustomersQueryHandler : IQueryHandler<GetCustomersQuery, List<Cu
     public async Task<Result<List<CustomerDto>>> Handle(GetCustomersQuery request, CancellationToken cancellationToken)
     {
         var result = await _customerRepository.ToList();
-        var response = new List<CustomerDto>();
-
-        foreach (var customer in result)
-        {
-            var customerDto = new CustomerDto();
-            customerDto.Map(customer);
-            response.Add(customerDto);
-        }
+        var response = result.Select(CustomerDto.FromEntity).ToList();
 
         return Result<List<CustomerDto>>.Success(response, ApplicationMessageKeys.CUSTOMERS_RETRIEVED_SUCCESSFULLY);
     }

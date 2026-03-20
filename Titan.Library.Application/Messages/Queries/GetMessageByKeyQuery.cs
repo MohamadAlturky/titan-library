@@ -41,8 +41,7 @@ public class GetMessageByKeyQueryHandler : IQueryHandler<GetMessageByKeyQuery, M
         if (message is null)
             return Result<MessageDto>.Fail(ApplicationMessageKeys.MESSAGE_NOT_FOUND);
 
-        var dto = new MessageDto();
-        dto.Map(message);
+        var dto = MessageDto.FromEntity(message);
 
         await _cacheResolver.SetAsync(message.Key, dto, cancellationToken);
 

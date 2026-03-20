@@ -1,9 +1,8 @@
-using Titan.Library.Common.Dtos;
 using Titan.Library.Domain.Borrows;
 
 namespace Titan.Library.Contracts.Borrows;
 
-public class BorrowDto : BaseDto<Borrow, int>
+public class BorrowDto
 {
     public int Id { get; set; }
     public int CustomerId { get; set; }
@@ -13,14 +12,10 @@ public class BorrowDto : BaseDto<Borrow, int>
     public bool IsReturned { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    public override void Map(Borrow entity)
+    public static BorrowDto FromEntity(Borrow entity) => new()
     {
-        Id = entity.Id;
-        CustomerId = entity.CustomerId;
-        BookId = entity.BookId;
-        BorrowedAt = entity.BorrowedAt;
-        ReturnedAt = entity.ReturnedAt;
-        IsReturned = entity.IsReturned;
-        CreatedAt = entity.CreatedAt;
-    }
+        Id = entity.Id, CustomerId = entity.CustomerId, BookId = entity.BookId,
+        BorrowedAt = entity.BorrowedAt, ReturnedAt = entity.ReturnedAt,
+        IsReturned = entity.IsReturned, CreatedAt = entity.CreatedAt,
+    };
 }

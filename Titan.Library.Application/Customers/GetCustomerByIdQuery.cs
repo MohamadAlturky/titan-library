@@ -25,8 +25,7 @@ public class GetCustomerByIdQueryHandler : IQueryHandler<GetCustomerByIdQuery, C
         if (customer is null)
             return Result<CustomerDto>.Fail(ApplicationMessageKeys.CUSTOMER_NOT_FOUND);
 
-        var customerDto = new CustomerDto();
-        customerDto.Map(customer);
+        var customerDto = CustomerDto.FromEntity(customer);
 
         return Result<CustomerDto>.Success(customerDto, ApplicationMessageKeys.CUSTOMER_RETRIEVED_SUCCESSFULLY);
     }

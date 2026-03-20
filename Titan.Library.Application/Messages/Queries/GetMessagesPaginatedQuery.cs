@@ -34,14 +34,7 @@ public class GetMessagesPaginatedQueryHandler
             request.PageSize
         );
 
-        var dtos = items
-            .Select(m =>
-            {
-                var dto = new MessageDto();
-                dto.Map(m);
-                return dto;
-            })
-            .ToList();
+        var dtos = items.Select(MessageDto.FromEntity).ToList();
 
         var result = new PaginatedResult<MessageDto>(dtos, total, request.Page, request.PageSize);
 

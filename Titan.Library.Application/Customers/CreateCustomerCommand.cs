@@ -54,8 +54,7 @@ public class CreateCustomerCommandHandler : BaseCommandHandler<CreateCustomerCom
         var customerId = await _customerRepository.Add(customer);
         customer.Id = customerId;
 
-        var customerDto = new CustomerDto();
-        customerDto.Map(customer);
+        var customerDto = CustomerDto.FromEntity(customer);
 
         return Result<CustomerDto>.Success(customerDto, ApplicationMessageKeys.CUSTOMER_CREATED_SUCCESSFULLY);
     }

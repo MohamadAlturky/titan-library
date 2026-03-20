@@ -25,8 +25,7 @@ public class GetAuthorByIdQueryHandler : IQueryHandler<GetAuthorByIdQuery, Autho
         if (author is null)
             return Result<AuthorDto>.Fail(ApplicationMessageKeys.AUTHOR_NOT_FOUND);
 
-        var authorDto = new AuthorDto();
-        authorDto.Map(author);
+        var authorDto = AuthorDto.FromEntity(author);
 
         return Result<AuthorDto>.Success(authorDto, ApplicationMessageKeys.AUTHOR_RETRIEVED_SUCCESSFULLY);
     }

@@ -25,8 +25,7 @@ public class GetBookByIdQueryHandler : IQueryHandler<GetBookByIdQuery, BookDto>
         if (book is null)
             return Result<BookDto>.Fail(ApplicationMessageKeys.BOOK_NOT_FOUND);
 
-        var bookDto = new BookDto();
-        bookDto.Map(book);
+        var bookDto = BookDto.FromEntity(book);
 
         return Result<BookDto>.Success(bookDto, ApplicationMessageKeys.BOOK_RETRIEVED_SUCCESSFULLY);
     }

@@ -57,8 +57,7 @@ public class UpdateBookCommandHandler : BaseCommandHandler<UpdateBookCommand, Bo
 
         await _bookRepository.Update(book);
 
-        var bookDto = new BookDto();
-        bookDto.Map(book);
+        var bookDto = BookDto.FromEntity(book);
 
         return Result<BookDto>.Success(bookDto, ApplicationMessageKeys.BOOK_UPDATED_SUCCESSFULLY);
     }

@@ -1,9 +1,8 @@
-using Titan.Library.Common.Dtos;
 using Titan.Library.Domain.Books;
 
 namespace Titan.Library.Contracts.Books;
 
-public class BookDto : BaseDto<Book, int>
+public class BookDto
 {
     public int Id { get; set; }
     public string Isbn { get; set; } = string.Empty;
@@ -11,12 +10,9 @@ public class BookDto : BaseDto<Book, int>
     public int AuthorId { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    public override void Map(Book entity)
+    public static BookDto FromEntity(Book entity) => new()
     {
-        Id = entity.Id;
-        Isbn = entity.Isbn;
-        Title = entity.Title;
-        AuthorId = entity.AuthorId;
-        CreatedAt = entity.CreatedAt;
-    }
+        Id = entity.Id, Isbn = entity.Isbn, Title = entity.Title,
+        AuthorId = entity.AuthorId, CreatedAt = entity.CreatedAt,
+    };
 }

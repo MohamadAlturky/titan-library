@@ -58,8 +58,7 @@ public class UpdateMessageCommandHandler : BaseCommandHandler<UpdateMessageComma
 
         _ = _publisher.Publish(new MessageUpdatedEvent { Key = message.Key }, CancellationToken.None);
 
-        var dto = new MessageDto();
-        dto.Map(message);
+        var dto = MessageDto.FromEntity(message);
 
         return Result<MessageDto>.Success(dto, ApplicationMessageKeys.MESSAGE_UPDATED_SUCCESSFULLY);
     }

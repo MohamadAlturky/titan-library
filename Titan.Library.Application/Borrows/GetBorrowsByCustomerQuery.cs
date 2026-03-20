@@ -22,14 +22,7 @@ public class GetBorrowsByCustomerQueryHandler : IQueryHandler<GetBorrowsByCustom
     public async Task<Result<List<BorrowDto>>> Handle(GetBorrowsByCustomerQuery request, CancellationToken cancellationToken)
     {
         var result = await _borrowRepository.FindByCustomerId(request.CustomerId);
-        var response = new List<BorrowDto>();
-
-        foreach (var borrow in result)
-        {
-            var borrowDto = new BorrowDto();
-            borrowDto.Map(borrow);
-            response.Add(borrowDto);
-        }
+        var response = result.Select(BorrowDto.FromEntity).ToList();
 
         return Result<List<BorrowDto>>.Success(response, ApplicationMessageKeys.CUSTOMER_BORROWS_RETRIEVED_SUCCESSFULLY);
     }

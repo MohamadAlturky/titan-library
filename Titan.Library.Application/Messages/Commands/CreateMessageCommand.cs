@@ -49,8 +49,7 @@ public class CreateMessageCommandHandler : BaseCommandHandler<CreateMessageComma
         var id = await _messageRepository.Add(message);
         message.Id = id;
 
-        var dto = new MessageDto();
-        dto.Map(message);
+        var dto = MessageDto.FromEntity(message);
 
         return Result<MessageDto>.Success(dto, ApplicationMessageKeys.MESSAGE_CREATED_SUCCESSFULLY);
     }

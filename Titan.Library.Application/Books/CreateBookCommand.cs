@@ -58,8 +58,7 @@ public class CreateBookCommandHandler
         };
         var bookId = await _bookRepository.Add(book);
         book.Id = bookId;
-        var bookDto = new BookDto();
-        bookDto.Map(book);
+        var bookDto = BookDto.FromEntity(book);
         
         return Result<BookDto>.Success(bookDto, ApplicationMessageKeys.BOOK_CREATED_SUCCESSFULLY);
     }

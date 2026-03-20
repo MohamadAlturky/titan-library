@@ -81,8 +81,7 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
             CreatedAt       = DateTime.UtcNow
         });
 
-        var borrowDto = new BorrowDto();
-        borrowDto.Map(borrow);
+        var borrowDto = BorrowDto.FromEntity(borrow);
 
         return Result<BorrowDto>.Success(borrowDto, ApplicationMessageKeys.BORROW_CREATED_SUCCESSFULLY);
     }

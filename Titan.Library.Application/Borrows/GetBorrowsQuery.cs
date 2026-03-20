@@ -21,14 +21,7 @@ public class GetBorrowsQueryHandler : IQueryHandler<GetBorrowsQuery, List<Borrow
     public async Task<Result<List<BorrowDto>>> Handle(GetBorrowsQuery request, CancellationToken cancellationToken)
     {
         var result = await _borrowRepository.ToList();
-        var response = new List<BorrowDto>();
-
-        foreach (var borrow in result)
-        {
-            var borrowDto = new BorrowDto();
-            borrowDto.Map(borrow);
-            response.Add(borrowDto);
-        }
+        var response = result.Select(BorrowDto.FromEntity).ToList();
 
         return Result<List<BorrowDto>>.Success(response, ApplicationMessageKeys.BORROWS_RETRIEVED_SUCCESSFULLY);
     }
