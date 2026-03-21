@@ -16,6 +16,7 @@ public class Customer : User
             PasswordSalt = PasswordSalt,
             CreatedAt = CreatedAt,
             IsDeleted = IsDeleted,
+            IsActive = IsActive,
         };
 
     public static Customer Reconstitute(UserSnapshot snapshot)
@@ -29,6 +30,7 @@ public class Customer : User
         };
         c.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
         c.RestoreIsDeleted(snapshot.IsDeleted);
+        c.RestoreIsActive(snapshot.IsActive);
         return c;
     }
 

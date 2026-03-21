@@ -8,7 +8,7 @@ using StackExchange.Redis;
 using Titan.Library.Domain.Auth;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
-using Titan.Library.Domain.Caching;
+using Titan.Library.Common.Caching;
 using Titan.Library.Domain.Messages;
 using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.Auth;

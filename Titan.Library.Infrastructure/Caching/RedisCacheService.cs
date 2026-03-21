@@ -1,6 +1,6 @@
 using System.Text.Json;
 using StackExchange.Redis;
-using Titan.Library.Domain.Caching;
+using Titan.Library.Common.Caching;
 
 namespace Titan.Library.Infrastructure.Caching;
 

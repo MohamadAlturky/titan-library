@@ -1,4 +1,4 @@
-namespace Titan.Library.Domain.Caching;
+namespace Titan.Library.Common.Caching;
 
 public interface ICacheValueResolver<in TLookup, TDto> where TDto : class
 {

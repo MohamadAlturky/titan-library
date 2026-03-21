@@ -9,4 +9,5 @@ public sealed class UserSnapshot
     public string PasswordSalt { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public bool IsDeleted { get; init; }
+    public bool IsActive { get; init; }
 }

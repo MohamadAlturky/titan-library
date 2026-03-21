@@ -2,7 +2,7 @@ using Titan.Library.Common.Cqrs;
 using Titan.Library.Common.Results;
 using Titan.Library.Common.Utils;
 using Titan.Library.Contracts.Cache;
-using Titan.Library.Domain.Caching;
+using Titan.Library.Common.Caching;
 
 namespace Titan.Library.Application.Cache;
 

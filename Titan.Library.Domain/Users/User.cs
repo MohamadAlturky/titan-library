@@ -3,7 +3,7 @@ using Titan.Library.Common.Abstractions;
 
 namespace Titan.Library.Domain.Users;
 
-public class User : BaseEntity<int>
+public class User : BaseEntity<int>, ISoftDeletable
 {
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -30,10 +30,17 @@ public class User : BaseEntity<int>
     }
 
     public bool IsDeleted { get; private set; }
+    public bool IsActive { get; private set; } = true;
 
     public void Delete() => IsDeleted = true;
 
+    public void Activate() => IsActive = true;
+
+    public void Deactivate() => IsActive = false;
+
     protected void RestoreIsDeleted(bool isDeleted) => IsDeleted = isDeleted;
+
+    protected void RestoreIsActive(bool isActive) => IsActive = isActive;
 
     protected void RestorePassword(string passwordHash, string passwordSalt)
     {

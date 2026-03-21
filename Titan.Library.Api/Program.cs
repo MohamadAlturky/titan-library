@@ -15,6 +15,8 @@ builder.Services.AddInfrastructure(builder.Configuration).AddApplication(builder
 builder.Services.AddScoped<IApiResponseResolver, ApiResponseResolver>();
 
 var app = builder.Build();
+var context = app.Services.GetRequiredService<IHttpContextAccessor>();
+AppHttpContext.Configure(context);
 
 app.MapGet("/version", () => "1.0.1");
 app.MapEndpoints(typeof(EndpointsAssemblyReference).Assembly);

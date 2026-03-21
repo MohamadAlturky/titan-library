@@ -22,7 +22,8 @@ public class CreateUsersTableMigration(IDbConnectionFactory dbConnectionFactory)
                 {C.PasswordHash} TEXT NOT NULL,
                 {C.PasswordSalt} TEXT NOT NULL,
                 {C.CreatedAt}    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                {C.IsDeleted}    BOOLEAN NOT NULL DEFAULT FALSE
+                {C.IsDeleted}    BOOLEAN NOT NULL DEFAULT FALSE,
+                {C.IsActive}     BOOLEAN NOT NULL DEFAULT TRUE
             );
             CREATE INDEX IF NOT EXISTS idx_users_email ON {T.Table}({C.Email});
             """;

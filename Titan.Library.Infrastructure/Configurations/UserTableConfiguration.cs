@@ -13,6 +13,7 @@ public static class UserTableConfiguration
         public const string PasswordSalt = "password_salt";
         public const string CreatedAt = "created_at";
         public const string IsDeleted = "is_deleted";
+        public const string IsActive = "is_active";
     }
 
     public static class AuthorTable

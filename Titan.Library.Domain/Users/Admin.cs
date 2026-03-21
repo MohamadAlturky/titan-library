@@ -12,6 +12,7 @@ public class Admin : User
             PasswordSalt = PasswordSalt,
             CreatedAt = CreatedAt,
             IsDeleted = IsDeleted,
+            IsActive = IsActive,
         };
 
     public static Admin Reconstitute(UserSnapshot snapshot)
@@ -25,6 +26,7 @@ public class Admin : User
         };
         a.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
         a.RestoreIsDeleted(snapshot.IsDeleted);
+        a.RestoreIsActive(snapshot.IsActive);
         return a;
     }
 }

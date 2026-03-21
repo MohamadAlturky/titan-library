@@ -59,6 +59,19 @@ public static class ApplicationMessageKeys
     public const string MESSAGES_RETRIEVED_SUCCESSFULLY = nameof(MESSAGES_RETRIEVED_SUCCESSFULLY);
     public const string MESSAGE_RETRIEVED_SUCCESSFULLY = nameof(MESSAGE_RETRIEVED_SUCCESSFULLY);
 
+    // Auth
+    public const string AUTH_EMAIL_REQUIRED = nameof(AUTH_EMAIL_REQUIRED);
+    public const string AUTH_PASSWORD_REQUIRED = nameof(AUTH_PASSWORD_REQUIRED);
+    public const string AUTH_NAME_REQUIRED = nameof(AUTH_NAME_REQUIRED);
+    public const string AUTH_USER_TYPE_REQUIRED = nameof(AUTH_USER_TYPE_REQUIRED);
+    public const string AUTH_ADMIN_REGISTRATION_NOT_ALLOWED = nameof(AUTH_ADMIN_REGISTRATION_NOT_ALLOWED);
+    public const string AUTH_INVALID_CREDENTIALS = nameof(AUTH_INVALID_CREDENTIALS);
+    public const string AUTH_USER_NOT_FOUND = nameof(AUTH_USER_NOT_FOUND);
+    public const string AUTH_LOGIN_SUCCESS = nameof(AUTH_LOGIN_SUCCESS);
+    public const string AUTH_REGISTER_SUCCESS = nameof(AUTH_REGISTER_SUCCESS);
+    public const string AUTH_PROFILE_RETRIEVED_SUCCESSFULLY = nameof(AUTH_PROFILE_RETRIEVED_SUCCESSFULLY);
+    public const string AUTH_INVALID_USER_TYPE = nameof(AUTH_INVALID_USER_TYPE);
+
     // Cache
     public const string CACHE_BOOKS_RETRIEVED_SUCCESSFULLY = nameof(CACHE_BOOKS_RETRIEVED_SUCCESSFULLY);
     public const string CACHE_REFRESHED_SUCCESSFULLY = nameof(CACHE_REFRESHED_SUCCESSFULLY);

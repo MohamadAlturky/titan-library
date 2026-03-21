@@ -89,7 +89,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.{C.IsDeleted} = FALSE;
@@ -103,7 +103,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.id = @Id AND u.{C.IsDeleted} = FALSE;
@@ -119,7 +119,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.{C.Email} = @Email AND u.{C.IsDeleted} = FALSE;
@@ -141,6 +141,7 @@ public class CustomerRepository : ICustomerRepository
             PasswordSalt = reader.GetString(reader.GetOrdinal(C.PasswordSalt)),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
+            IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
         };
         return Customer.Reconstitute(snapshot);
     }

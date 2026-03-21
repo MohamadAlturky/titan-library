@@ -1,5 +1,6 @@
+using Titan.Library.Common.Caching;
 using Titan.Library.Contracts.Messages;
-using Titan.Library.Domain.Caching;
+using Titan.Library.Common.Caching;
 
 namespace Titan.Library.Application.Messages.Caching;
 
