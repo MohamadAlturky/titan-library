@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
-using Titan.Library.Domain.Auth;
+using Titan.Library.Common.Auth;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Common.Caching;

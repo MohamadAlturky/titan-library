@@ -7,16 +7,19 @@ namespace Titan.Library.Infrastructure.Migrations.Utils;
 
 public class SqlDbMigrator(
     IDbConnectionFactory connectionFactory,
-    IEnumerable<ISqlMigration> migrations) : IDbMigrator
+    IEnumerable<ISqlMigration> migrations
+) : IDbMigrator
 {
     private const string MigrationTableName = "__SQL_MIGRATIONS";
 
     public async Task MigrateAsync()
     {
         // Assuming your factory returns a DbConnection (which supports Async methods)
-        await using var connection = connectionFactory.CreateDbConnection() as DbConnection
-                                     ?? throw new InvalidOperationException(
-                                         "Connection must be a DbConnection to support async operations.");
+        await using var connection =
+            connectionFactory.CreateDbConnection()
+            ?? throw new InvalidOperationException(
+                "Connection must be a DbConnection to support async operations."
+            );
 
         if (connection.State != ConnectionState.Open)
             await connection.OpenAsync();
@@ -35,7 +38,7 @@ public class SqlDbMigrator(
         foreach (var migration in pendingMigrations)
         {
             // We use a manual transaction for the "Record Keeping" step
-            // Note: If ISqlMigration.Apply() manages its own connection, 
+            // Note: If ISqlMigration.Apply() manages its own connection,
             // you might need to pass this connection/transaction to it.
             using var transaction = await connection.BeginTransactionAsync();
             try
@@ -60,11 +63,11 @@ public class SqlDbMigrator(
     {
         using var command = connection.CreateCommand();
         command.CommandText = $"""
-                               CREATE TABLE IF NOT EXISTS {MigrationTableName} (
-                                   migration_key TEXT PRIMARY KEY,
-                                   execution_date TIMESTAMP WITH TIME ZONE NOT NULL
-                               );
-                               """;
+            CREATE TABLE IF NOT EXISTS {MigrationTableName} (
+                migration_key TEXT PRIMARY KEY,
+                execution_date TIMESTAMP WITH TIME ZONE NOT NULL
+            );
+            """;
         await command.ExecuteNonQueryAsync();
     }
 
@@ -83,11 +86,16 @@ public class SqlDbMigrator(
         return keys;
     }
 
-    private async Task RecordMigrationSuccess(DbConnection connection, DbTransaction transaction, string key)
+    private async Task RecordMigrationSuccess(
+        DbConnection connection,
+        DbTransaction transaction,
+        string key
+    )
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"INSERT INTO {MigrationTableName} (migration_key, execution_date) VALUES (@key, @date)";
+        command.CommandText =
+            $"INSERT INTO {MigrationTableName} (migration_key, execution_date) VALUES (@key, @date)";
 
         var keyParam = command.CreateParameter();
         keyParam.ParameterName = "@key";

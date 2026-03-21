@@ -2,7 +2,7 @@ using Titan.Library.Common.Cqrs;
 using Titan.Library.Common.EndPoints;
 using Titan.Library.Common.Results;
 using Titan.Library.Contracts.Auth;
-using Titan.Library.Domain.Auth;
+using Titan.Library.Common.Auth;
 using Titan.Library.Domain.Users;
 
 namespace Titan.Library.Application.Auth;

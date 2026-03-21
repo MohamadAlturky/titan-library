@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Titan.Library.Domain.Auth;
+using Titan.Library.Common.Auth;
 
 namespace Titan.Library.Infrastructure.Auth;
 

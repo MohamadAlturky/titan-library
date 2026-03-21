@@ -1,4 +1,4 @@
-namespace Titan.Library.Domain.Auth;
+namespace Titan.Library.Common.Auth;
 
 public interface IJwtGenerator
 {
