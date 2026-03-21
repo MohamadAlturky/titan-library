@@ -33,7 +33,7 @@ public class SqlDbMigrator(
         // 3. Filter and Sort pending migrations
         var pendingMigrations = migrations
             .Where(m => !appliedKeys.Contains(m.Key()))
-            .OrderBy(m => m.Order());
+            .OrderBy(m => m.Key());
 
         foreach (var migration in pendingMigrations)
         {

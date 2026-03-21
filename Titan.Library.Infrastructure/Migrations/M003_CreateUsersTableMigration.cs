@@ -5,11 +5,9 @@ using T = Titan.Library.Infrastructure.Configurations.UserTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Migrations;
 
-public class CreateUsersTableMigration(IDbConnectionFactory dbConnectionFactory)
+public class M003_CreateUsersTableMigration(IDbConnectionFactory dbConnectionFactory)
     : SqlMigration(dbConnectionFactory)
 {
-    public override int Order() => 3;
-
     protected override async Task ApplySqlDdl()
     {
         await using var command = Connection.CreateCommand();

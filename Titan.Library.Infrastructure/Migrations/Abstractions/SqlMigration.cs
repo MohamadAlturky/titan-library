@@ -30,6 +30,4 @@ public abstract class SqlMigration(IDbConnectionFactory dbConnectionFactory) : I
     {
         return this.GetType().Name;
     }
-
-    public abstract int Order();
 }

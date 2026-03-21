@@ -5,11 +5,9 @@ using T = Titan.Library.Infrastructure.Configurations.BookTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Migrations;
 
-public class FixBookTableMigration(IDbConnectionFactory dbConnectionFactory)
+public class M002_FixBookTableMigration(IDbConnectionFactory dbConnectionFactory)
     : SqlMigration(dbConnectionFactory)
 {
-    public override int Order() => 2;
-
     protected override async Task ApplySqlDdl()
     {
         await using var command = Connection.CreateCommand();

@@ -35,11 +35,9 @@ type model struct {
 	cfg       Config
 	input     textinput.Model
 	state     state
-	maxOrder  int
-	nextOrder int
+	nextNum   int
 	createdAt string
 	errMsg    string
-	scanErr   string
 }
 
 func newModel(cfg Config) model {
@@ -49,20 +47,22 @@ func newModel(cfg Config) model {
 	ti.CharLimit = 100
 	ti.Width = 50
 
-	maxOrder, err := scanMaxOrder(cfg.MigrationsPath)
-	scanErrMsg := ""
-	if err != nil {
-		scanErrMsg = err.Error()
-	}
+	max, _ := scanMaxPrefix(cfg.MigrationsPath)
 
 	return model{
-		cfg:       cfg,
-		input:     ti,
-		state:     stateInput,
-		maxOrder:  maxOrder,
-		nextOrder: maxOrder + 1,
-		scanErr:   scanErrMsg,
+		cfg:     cfg,
+		input:   ti,
+		state:   stateInput,
+		nextNum: max + 1,
 	}
+}
+
+func (m model) className() string {
+	name := strings.TrimSpace(m.input.Value())
+	if name == "" {
+		return ""
+	}
+	return fmt.Sprintf("M%03d_%sMigration", m.nextNum, name)
 }
 
 func (m model) Init() tea.Cmd {
@@ -79,16 +79,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			switch m.state {
 			case stateInput:
-				name := strings.TrimSpace(m.input.Value())
-				if name == "" {
+				if m.className() == "" {
 					return m, nil
 				}
 				m.state = statePreview
 				return m, nil
 
 			case statePreview:
-				name := strings.TrimSpace(m.input.Value())
-				path, err := createMigration(m.cfg.MigrationsPath, name, m.nextOrder)
+				path, err := createMigration(m.cfg.MigrationsPath, m.className())
 				if err != nil {
 					m.errMsg = err.Error()
 				} else {
@@ -115,27 +113,22 @@ func (m model) View() string {
 	var b strings.Builder
 
 	b.WriteString(titleStyle.Render("Migration Creator") + "\n")
-	b.WriteString(labelStyle.Render(fmt.Sprintf("Path: %s", m.cfg.MigrationsPath)) + "\n")
-	if m.scanErr != "" {
-		b.WriteString(errorStyle.Render("  Warning: "+m.scanErr) + "\n")
-	}
-	b.WriteString("\n")
+	b.WriteString(labelStyle.Render(fmt.Sprintf("Path: %s", m.cfg.MigrationsPath)) + "\n\n")
 
 	switch m.state {
 	case stateInput:
-		b.WriteString(labelStyle.Render("Migration name (without 'Migration.cs'):") + "\n")
+		b.WriteString(labelStyle.Render("Migration name:") + "\n")
 		b.WriteString(m.input.View() + "\n\n")
-		b.WriteString(hintStyle.Render(fmt.Sprintf("Detected max order: %d  →  next will be: %d", m.maxOrder, m.nextOrder)) + "\n\n")
+		preview := fmt.Sprintf("M%03d_{name}Migration", m.nextNum)
+		b.WriteString(hintStyle.Render(fmt.Sprintf("Will create class: %s", preview)) + "\n\n")
 		b.WriteString(dimStyle.Render("enter to continue • esc to quit"))
 
 	case statePreview:
-		name := strings.TrimSpace(m.input.Value())
-		fileName := name + ".cs"
-		buildBoilerplate(name, m.nextOrder)
-
-		b.WriteString(labelStyle.Render("File to create: ") + valueStyle.Render(fileName) + "\n")
-		b.WriteString(labelStyle.Render("Order:          ") + valueStyle.Render(fmt.Sprintf("%d", m.nextOrder)) + "\n\n")
-		b.WriteString(labelStyle.Render("Done") + "\n")
+		cn := m.className()
+		b.WriteString(labelStyle.Render("Class name: ") + valueStyle.Render(cn) + "\n")
+		b.WriteString(labelStyle.Render("File:       ") + valueStyle.Render(cn+".cs") + "\n\n")
+		b.WriteString(labelStyle.Render("Boilerplate preview:") + "\n")
+		b.WriteString(boxStyle.Render(dimStyle.Render(buildBoilerplate(cn))) + "\n\n")
 		b.WriteString(hintStyle.Render("enter to create • esc to quit"))
 
 	case stateDone:

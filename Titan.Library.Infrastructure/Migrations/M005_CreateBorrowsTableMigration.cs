@@ -8,11 +8,9 @@ using T = Titan.Library.Infrastructure.Configurations.BorrowTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Migrations;
 
-public class CreateBorrowsTableMigration(IDbConnectionFactory dbConnectionFactory)
+public class M005_CreateBorrowsTableMigration(IDbConnectionFactory dbConnectionFactory)
     : SqlMigration(dbConnectionFactory)
 {
-    public override int Order() => 5;
-
     protected override async Task ApplySqlDdl()
     {
         await using var command = Connection.CreateCommand();

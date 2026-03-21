@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-var orderRegex = regexp.MustCompile(`Order\(\)\s*=>\s*(\d+)`)
+var prefixRegex = regexp.MustCompile(`class\s+M(\d+)_`)
 
-func scanMaxOrder(migrationsPath string) (int, error) {
+func scanMaxPrefix(migrationsPath string) (int, error) {
 	entries, err := os.ReadDir(migrationsPath)
 	if err != nil {
 		return 0, fmt.Errorf("cannot read migrations dir: %w", err)
@@ -26,7 +26,7 @@ func scanMaxOrder(migrationsPath string) (int, error) {
 		if err != nil {
 			continue
 		}
-		matches := orderRegex.FindAllSubmatch(data, -1)
+		matches := prefixRegex.FindAllSubmatch(data, -1)
 		for _, m := range matches {
 			if n, err := strconv.Atoi(string(m[1])); err == nil && n > max {
 				max = n
@@ -36,7 +36,7 @@ func scanMaxOrder(migrationsPath string) (int, error) {
 	return max, nil
 }
 
-func buildBoilerplate(name string, order int) string {
+func buildBoilerplate(className string) string {
 	return fmt.Sprintf(`using Titan.Library.Infrastructure.Connectors;
 using Titan.Library.Infrastructure.Migrations.Abstractions;
 
@@ -45,8 +45,6 @@ namespace Titan.Library.Infrastructure.Migrations;
 public class %s(IDbConnectionFactory dbConnectionFactory)
     : SqlMigration(dbConnectionFactory)
 {
-    public override int Order() => %d;
-
     protected override async Task ApplySqlDdl()
     {
         await using var command = Connection.CreateCommand();
@@ -58,18 +56,18 @@ public class %s(IDbConnectionFactory dbConnectionFactory)
         await command.ExecuteNonQueryAsync();
     }
 }
-`, name, order)
+`, className)
 }
 
-func createMigration(migrationsPath, name string, order int) (string, error) {
-	fileName := name + ".cs"
+func createMigration(migrationsPath, className string) (string, error) {
+	fileName := className + ".cs"
 	filePath := filepath.Join(migrationsPath, fileName)
 
 	if _, err := os.Stat(filePath); err == nil {
 		return "", fmt.Errorf("file already exists: %s", fileName)
 	}
 
-	content := buildBoilerplate(name, order)
+	content := buildBoilerplate(className)
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
 		return "", fmt.Errorf("failed to write file: %w", err)
 	}

@@ -3,11 +3,9 @@ using Titan.Library.Infrastructure.Migrations.Abstractions;
 
 namespace Titan.Library.Infrastructure.Migrations;
 
-public class CreateMessagesTableMigration(IDbConnectionFactory dbConnectionFactory)
+public class M007_CreateMessagesTableMigration(IDbConnectionFactory dbConnectionFactory)
     : SqlMigration(dbConnectionFactory)
 {
-    public override int Order() => 7;
-
     protected override async Task ApplySqlDdl()
     {
         await using var command = Connection.CreateCommand();
