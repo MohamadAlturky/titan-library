@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Titan.Library.Common.Cqrs;
 using Titan.Library.Common.Results;
 using Titan.Library.Contracts.Books;
@@ -9,6 +11,8 @@ public class CreateBookCommand : ICommand<BookDto>
 {
     public string Isbn { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public int AuthorId { get; set; }
 }
 
@@ -35,8 +39,7 @@ public class CreateBookCommandValidator : ICommandValidator<CreateBookCommand, B
     }
 }
 
-public class CreateBookCommandHandler
-    : BaseCommandHandler<CreateBookCommand, BookDto>
+public class CreateBookCommandHandler : BaseCommandHandler<CreateBookCommand, BookDto>
 {
     public override ICommandValidator<CreateBookCommand, BookDto> Validator { get; set; } =
         new CreateBookCommandValidator();
@@ -47,7 +50,11 @@ public class CreateBookCommandHandler
     {
         _bookRepository = bookRepository;
     }
-    protected override async Task<Result<BookDto>> InnerHandle(CreateBookCommand request, CancellationToken cancellationToken)
+
+    protected override async Task<Result<BookDto>> InnerHandle(
+        CreateBookCommand request,
+        CancellationToken cancellationToken
+    )
     {
         var book = new Book
         {
@@ -59,7 +66,7 @@ public class CreateBookCommandHandler
         var bookId = await _bookRepository.Add(book);
         book.Id = bookId;
         var bookDto = BookDto.FromEntity(book);
-        
+
         return Result<BookDto>.Success(bookDto, ApplicationMessageKeys.BOOK_CREATED_SUCCESSFULLY);
     }
 }

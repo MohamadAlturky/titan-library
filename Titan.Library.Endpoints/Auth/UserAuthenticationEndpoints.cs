@@ -18,7 +18,7 @@ public class UserAuthenticationEndpoints : EndpointGroupBase
         group
             .MapPost("/login", LoginAsync)
             .WithName(nameof(LoginAsync))
-            .WithSummary("Login as Customer or Author")
+            .WithSummary("Login as Customer or Author or Admin")
             .Produces(StatusCodes.Status200OK, typeof(AuthTokenDto))
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails))
             .AllowAnonymous();
@@ -36,7 +36,7 @@ public class UserAuthenticationEndpoints : EndpointGroupBase
         group
             .MapGet("/profile", GetProfileAsync)
             .WithName(nameof(GetProfileAsync))
-            .WithSummary("Get the authenticated user's profile (Customer or Author only)")
+            .WithSummary("Get the authenticated user's profile (Customer, Author or admin)")
             .Produces(StatusCodes.Status200OK, typeof(UserProfileDto))
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails))
             .RequireUserType(UserTypeValues.Customer, UserTypeValues.Author);

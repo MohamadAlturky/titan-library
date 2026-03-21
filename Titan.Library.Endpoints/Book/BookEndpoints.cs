@@ -19,7 +19,8 @@ public class BookEndpoints : EndpointGroupBase
             .WithName(nameof(CreateBookAsync))
             .WithSummary("Create a new Book")
             .Produces(StatusCodes.Status200OK, typeof(BookDto))
-            .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails));
+            .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails))
+            .RequireUserType(UserTypeValues.Author);
 
         group
             .MapGet("/", GetBooksAsync)
@@ -64,6 +65,7 @@ public class BookEndpoints : EndpointGroupBase
         [FromBody] CreateBookCommand request
     )
     {
+        request.AuthorId = GetUserId();
         var result = await sender.Send(request);
         return await HandleApiResponseAsync(apiMessageResolver, result);
     }
