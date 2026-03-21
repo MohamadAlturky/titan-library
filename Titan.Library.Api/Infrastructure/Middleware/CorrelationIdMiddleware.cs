@@ -4,17 +4,11 @@ using Titan.Library.Common.Logging;
 
 namespace Titan.Library.Api.Infrastructure.Middleware;
 
-public sealed class CorrelationIdMiddleware
+public sealed class CorrelationIdMiddleware : IMiddleware
 {
     private const string HeaderName = "X-Correlation-ID";
-    private readonly RequestDelegate _next;
 
-    public CorrelationIdMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         var provider = context.RequestServices.GetRequiredService<ICorrelationIdProvider>();
 
@@ -32,7 +26,7 @@ public sealed class CorrelationIdMiddleware
 
         using (LogContext.PushProperty("CorrelationId", correlationId))
         {
-            await _next(context);
+            await next(context);
         }
     }
 }
