@@ -10,10 +10,9 @@ public class Borrow : BaseEntity<int>
     public int BookId { get; set; }
     public Book Book { get; set; } = null!;
     public Customer Customer { get; set; } = null!;
-    public DateTime BorrowedAt { get; set; }
     public DateTime? ReturnedAt { get; set; }
 
-    public bool IsReturned => ReturnedAt.HasValue;
+    public bool IsReturned { get; set; }
 
     public void Return()
     {
@@ -28,7 +27,6 @@ public class Borrow : BaseEntity<int>
             Id = Id,
             CustomerId = CustomerId,
             BookId = BookId,
-            BorrowedAt = BorrowedAt,
             ReturnedAt = ReturnedAt,
             CreatedAt = CreatedAt,
         };
@@ -39,7 +37,7 @@ public class Borrow : BaseEntity<int>
             Id = snapshot.Id,
             CustomerId = snapshot.CustomerId,
             BookId = snapshot.BookId,
-            BorrowedAt = snapshot.BorrowedAt,
+            IsReturned = snapshot.IsReturned,
             ReturnedAt = snapshot.ReturnedAt,
             CreatedAt = snapshot.CreatedAt,
         };
@@ -49,7 +47,6 @@ public class Borrow : BaseEntity<int>
         {
             CustomerId = customerId,
             BookId = bookId,
-            BorrowedAt = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow,
         };
 }

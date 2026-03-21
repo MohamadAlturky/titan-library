@@ -21,8 +21,8 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            INSERT INTO {T.Table} ({C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.CreatedAt})
-            VALUES (@CustomerId, @BookId, @BorrowedAt, @CreatedAt)
+            INSERT INTO {T.Table} ({C.CustomerId}, {C.BookId}, {C.CreatedAt})
+            VALUES (@CustomerId, @BookId, @CreatedAt)
             RETURNING {C.Id};
             """;
 
@@ -31,7 +31,6 @@ public class BorrowRepository : IBorrowRepository
             {
                 entity.CustomerId,
                 entity.BookId,
-                entity.BorrowedAt,
                 entity.CreatedAt,
             }
         );
@@ -70,7 +69,7 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt} FROM {T.Table};";
+            $"SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.IsReturned}, {C.ReturnedAt}, {C.CreatedAt} FROM {T.Table};";
 
         return await command.ExecuteListAsync(MapToBorrow);
     }
@@ -80,7 +79,7 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.IsReturned}, {C.ReturnedAt}, {C.CreatedAt}
             FROM {T.Table}
             WHERE {C.Id} = @Id;
             """;
@@ -95,7 +94,7 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.IsReturned}, {C.ReturnedAt}, {C.CreatedAt}
             FROM {T.Table}
             WHERE {C.CustomerId} = @CustomerId;
             """;
@@ -110,7 +109,7 @@ public class BorrowRepository : IBorrowRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.BorrowedAt}, {C.ReturnedAt}, {C.CreatedAt}
+            SELECT {C.Id}, {C.CustomerId}, {C.BookId}, {C.IsReturned}, {C.ReturnedAt}, {C.CreatedAt}
             FROM {T.Table}
             WHERE {C.CustomerId} = @CustomerId AND {C.BookId} = @BookId AND {C.ReturnedAt} IS NULL
             LIMIT 1;
@@ -129,7 +128,7 @@ public class BorrowRepository : IBorrowRepository
             Id         = reader.GetInt32(reader.GetOrdinal(C.Id)),
             CustomerId = reader.GetInt32(reader.GetOrdinal(C.CustomerId)),
             BookId     = reader.GetInt32(reader.GetOrdinal(C.BookId)),
-            BorrowedAt = reader.GetDateTime(reader.GetOrdinal(C.BorrowedAt)),
+            IsReturned = reader.GetBoolean(reader.GetOrdinal(C.IsReturned)),
             ReturnedAt = reader.IsDBNull(returnedAtOrdinal) ? null : reader.GetDateTime(returnedAtOrdinal),
             CreatedAt  = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
         };

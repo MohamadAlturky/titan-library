@@ -10,8 +10,13 @@ public class AuthorDto
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }
 
-    public static AuthorDto FromEntity(Author entity) => new()
-    {
-        Id = entity.Id, Name = entity.Name, Email = entity.Email, CreatedAt = entity.CreatedAt, IsActive = entity.IsActive,
-    };
+    public static AuthorDto FromEntity(Author entity) =>
+        new()
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Email = entity.Email,
+            CreatedAt = entity.CreatedAt,
+            IsActive = entity.IsActive,
+        };
 }
