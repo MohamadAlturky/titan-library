@@ -29,7 +29,7 @@ static class Program
 
         // 2. Build class name with datetime prefix (EF Core style)
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-        var className = $"{timestamp}_{name}Migration";
+        var className = $"_{timestamp}_{name}Migration";
         var fileName = $"{className}.cs";
         var filePath = Path.Combine(migrationsPath, fileName);
 
