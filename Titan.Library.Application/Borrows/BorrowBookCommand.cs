@@ -39,14 +39,18 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
     public BorrowBookCommandHandler(
         ICustomerRepository customerRepository,
         IBookRepository bookRepository,
-        IBorrowRepository borrowRepository)
+        IBorrowRepository borrowRepository
+    )
     {
         _customerRepository = customerRepository;
         _bookRepository = bookRepository;
         _borrowRepository = borrowRepository;
     }
 
-    protected override async Task<Result<BorrowDto>> InnerHandle(BorrowBookCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<BorrowDto>> InnerHandle(
+        BorrowBookCommand request,
+        CancellationToken cancellationToken
+    )
     {
         var customer = await _customerRepository.FindById(request.CustomerId);
         if (customer is null)
@@ -59,7 +63,10 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
         if (!book.IsAvailable)
             return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_NOT_AVAILABLE);
 
-        var existingBorrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(request.CustomerId, request.BookId);
+        var existingBorrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(
+            request.CustomerId,
+            request.BookId
+        );
         if (existingBorrow is not null)
             return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_ALREADY_BORROWED_BY_CUSTOMER);
 
@@ -72,6 +79,9 @@ public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, Bo
 
         var borrowDto = BorrowDto.FromEntity(borrow);
 
-        return Result<BorrowDto>.Success(borrowDto, ApplicationMessageKeys.BORROW_CREATED_SUCCESSFULLY);
+        return Result<BorrowDto>.Success(
+            borrowDto,
+            ApplicationMessageKeys.BORROW_CREATED_SUCCESSFULLY
+        );
     }
 }
