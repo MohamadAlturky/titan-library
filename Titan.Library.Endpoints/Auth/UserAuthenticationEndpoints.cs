@@ -39,7 +39,7 @@ public class UserAuthenticationEndpoints : EndpointGroupBase
             .WithSummary("Get the authenticated user's profile (Customer or Author only)")
             .Produces(StatusCodes.Status200OK, typeof(UserProfileDto))
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails))
-            .RequireUserType(UserType.Customer, UserType.Author);
+            .RequireUserType(UserTypeValues.Customer, UserTypeValues.Author);
     }
 
     private async Task<IResult> LoginAsync(
@@ -64,8 +64,7 @@ public class UserAuthenticationEndpoints : EndpointGroupBase
 
     private async Task<IResult> GetProfileAsync(
         [FromServices] ISender sender,
-        [FromServices] IApiResponseResolver apiMessageResolver,
-        HttpContext httpContext
+        [FromServices] IApiResponseResolver apiMessageResolver
     )
     {
         var result = await sender.Send(new GetProfileQuery { UserId = GetUserId() });

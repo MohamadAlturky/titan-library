@@ -14,6 +14,7 @@ public static class UserTableConfiguration
         public const string CreatedAt = "created_at";
         public const string IsDeleted = "is_deleted";
         public const string IsActive = "is_active";
+        public const string UserType = "user_type";
     }
 
     public static class AuthorTable

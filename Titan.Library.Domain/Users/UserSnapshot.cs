@@ -10,4 +10,5 @@ public sealed class UserSnapshot
     public DateTime CreatedAt { get; init; }
     public bool IsDeleted { get; init; }
     public bool IsActive { get; init; }
+    public UserType UserType { get; init; }
 }

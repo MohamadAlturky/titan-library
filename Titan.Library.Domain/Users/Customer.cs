@@ -4,6 +4,8 @@ namespace Titan.Library.Domain.Users;
 
 public class Customer : User
 {
+    public Customer() => RestoreUserType(UserType.Customer);
+
     public List<Borrow> Borrows { get; set; } = [];
 
     public UserSnapshot TakeSnapshot() =>
@@ -17,6 +19,7 @@ public class Customer : User
             CreatedAt = CreatedAt,
             IsDeleted = IsDeleted,
             IsActive = IsActive,
+            UserType = UserType,
         };
 
     public static Customer Reconstitute(UserSnapshot snapshot)
@@ -31,6 +34,7 @@ public class Customer : User
         c.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
         c.RestoreIsDeleted(snapshot.IsDeleted);
         c.RestoreIsActive(snapshot.IsActive);
+        c.RestoreUserType(snapshot.UserType);
         return c;
     }
 

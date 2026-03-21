@@ -4,6 +4,8 @@ namespace Titan.Library.Domain.Users;
 
 public class Author : User
 {
+    public Author() => RestoreUserType(UserType.Author);
+
     public List<Book> Books { get; set; } = [];
 
     public UserSnapshot TakeSnapshot() =>
@@ -17,6 +19,7 @@ public class Author : User
             CreatedAt = CreatedAt,
             IsDeleted = IsDeleted,
             IsActive = IsActive,
+            UserType = UserType,
         };
 
     public static Author Reconstitute(UserSnapshot snapshot)
@@ -31,6 +34,7 @@ public class Author : User
         a.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
         a.RestoreIsDeleted(snapshot.IsDeleted);
         a.RestoreIsActive(snapshot.IsActive);
+        a.RestoreUserType(snapshot.UserType);
         return a;
     }
 }

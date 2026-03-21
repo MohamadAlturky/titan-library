@@ -29,6 +29,22 @@ public class User : BaseEntity<int>, ISoftDeletable
         return RandomNumberGenerator.GetBytes(32);
     }
 
+    public UserType UserType { get; private set; }
+
+    public string RepresentUserTypeString()
+    {
+        return UserType switch
+        {
+            UserType.Customer => "Customer",
+            UserType.Admin => "Admin",
+            UserType.Author => "Author",
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(UserType),
+                $"Unexpected value: {UserType}"
+            ),
+        };
+    }
+
     public bool IsDeleted { get; private set; }
     public bool IsActive { get; private set; } = true;
 
@@ -41,6 +57,8 @@ public class User : BaseEntity<int>, ISoftDeletable
     protected void RestoreIsDeleted(bool isDeleted) => IsDeleted = isDeleted;
 
     protected void RestoreIsActive(bool isActive) => IsActive = isActive;
+
+    protected void RestoreUserType(UserType userType) => UserType = userType;
 
     protected void RestorePassword(string passwordHash, string passwordSalt)
     {

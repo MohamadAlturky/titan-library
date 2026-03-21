@@ -56,6 +56,7 @@ public static class InfrastructureBootstrapper
         services.AddScoped<ISqlDbContext, SqlDbContext>();
         services.AddScoped<IAsyncUnitOfWork>(sp => sp.GetRequiredService<ISqlDbContext>());
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();

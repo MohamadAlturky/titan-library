@@ -13,16 +13,11 @@ public class GetProfileQuery : IQuery<UserProfileDto>
 
 public class GetProfileQueryHandler : IQueryHandler<GetProfileQuery, UserProfileDto>
 {
-    private readonly ICustomerRepository _customerRepository;
-    private readonly IAuthorRepository _authorRepository;
+    private readonly IUserRepository _userRepository;
 
-    public GetProfileQueryHandler(
-        ICustomerRepository customerRepository,
-        IAuthorRepository authorRepository
-    )
+    public GetProfileQueryHandler(IUserRepository userRepository)
     {
-        _customerRepository = customerRepository;
-        _authorRepository = authorRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<Result<UserProfileDto>> Handle(
@@ -30,19 +25,19 @@ public class GetProfileQueryHandler : IQueryHandler<GetProfileQuery, UserProfile
         CancellationToken cancellationToken
     )
     {
-        var customer = await _customerRepository.FindById(request.UserId);
-        if (customer is null)
+        var user = await _userRepository.FindById(request.UserId);
+        if (user is null)
             return Result<UserProfileDto>.Fail(ApplicationMessageKeys.AUTH_USER_NOT_FOUND);
 
         return Result<UserProfileDto>.Success(
             new UserProfileDto
             {
-                Id = customer.Id,
-                Name = customer.Name,
-                Email = customer.Email,
-                UserType = UserType.Customer,
-                CreatedAt = customer.CreatedAt,
-                IsActive = customer.IsActive,
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                UserType = user.RepresentUserTypeString(),
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive,
             },
             ApplicationMessageKeys.AUTH_PROFILE_RETRIEVED_SUCCESSFULLY
         );

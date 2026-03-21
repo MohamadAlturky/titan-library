@@ -1,8 +1,8 @@
+using Titan.Library.Common.Auth;
 using Titan.Library.Common.Cqrs;
 using Titan.Library.Common.EndPoints;
 using Titan.Library.Common.Results;
 using Titan.Library.Contracts.Auth;
-using Titan.Library.Common.Auth;
 using Titan.Library.Domain.Users;
 
 namespace Titan.Library.Application.Auth;
@@ -31,12 +31,12 @@ public class RegisterCommandValidator : ICommandValidator<RegisterCommand, AuthT
         if (string.IsNullOrWhiteSpace(command.UserType))
             return Result.Fail(ApplicationMessageKeys.AUTH_USER_TYPE_REQUIRED);
 
-        if (command.UserType.Equals(UserType.Admin, StringComparison.OrdinalIgnoreCase))
+        if (command.UserType.Equals(UserTypeValues.Admin, StringComparison.OrdinalIgnoreCase))
             return Result.Fail(ApplicationMessageKeys.AUTH_ADMIN_REGISTRATION_NOT_ALLOWED);
 
         if (
-            !command.UserType.Equals(UserType.Customer, StringComparison.OrdinalIgnoreCase)
-            && !command.UserType.Equals(UserType.Author, StringComparison.OrdinalIgnoreCase)
+            !command.UserType.Equals(UserTypeValues.Customer, StringComparison.OrdinalIgnoreCase)
+            && !command.UserType.Equals(UserTypeValues.Author, StringComparison.OrdinalIgnoreCase)
         )
             return Result.Fail(ApplicationMessageKeys.AUTH_INVALID_USER_TYPE);
 
@@ -69,7 +69,7 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
         CancellationToken cancellationToken
     )
     {
-        if (request.UserType.Equals(UserType.Customer, StringComparison.OrdinalIgnoreCase))
+        if (request.UserType.Equals(UserTypeValues.Customer, StringComparison.OrdinalIgnoreCase))
         {
             var customer = new Customer
             {
@@ -82,13 +82,13 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
             var customerId = await _customerRepository.Add(customer);
             customer.Id = customerId;
 
-            var token = _jwtGenerator.Generate(customer.Id, UserType.Customer);
+            var token = _jwtGenerator.Generate(customer.Id, UserTypeValues.Customer);
             return Result<AuthTokenDto>.Success(
                 new AuthTokenDto
                 {
                     Token = token,
                     UserId = customer.Id,
-                    UserType = UserType.Customer,
+                    UserType = customer.RepresentUserTypeString(),
                 },
                 ApplicationMessageKeys.AUTH_REGISTER_SUCCESS
             );
@@ -106,13 +106,13 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
             var authorId = await _authorRepository.Add(author);
             author.Id = authorId;
 
-            var token = _jwtGenerator.Generate(author.Id, UserType.Author);
+            var token = _jwtGenerator.Generate(author.Id, UserTypeValues.Author);
             return Result<AuthTokenDto>.Success(
                 new AuthTokenDto
                 {
                     Token = token,
                     UserId = author.Id,
-                    UserType = UserType.Author,
+                    UserType = author.RepresentUserTypeString(),
                 },
                 ApplicationMessageKeys.AUTH_REGISTER_SUCCESS
             );

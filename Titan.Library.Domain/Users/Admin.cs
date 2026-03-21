@@ -2,6 +2,8 @@ namespace Titan.Library.Domain.Users;
 
 public class Admin : User
 {
+    public Admin() => RestoreUserType(UserType.Admin);
+
     public UserSnapshot TakeSnapshot() =>
         new()
         {
@@ -13,6 +15,7 @@ public class Admin : User
             CreatedAt = CreatedAt,
             IsDeleted = IsDeleted,
             IsActive = IsActive,
+            UserType = UserType,
         };
 
     public static Admin Reconstitute(UserSnapshot snapshot)
@@ -27,6 +30,7 @@ public class Admin : User
         a.RestorePassword(snapshot.PasswordHash, snapshot.PasswordSalt);
         a.RestoreIsDeleted(snapshot.IsDeleted);
         a.RestoreIsActive(snapshot.IsActive);
+        a.RestoreUserType(snapshot.UserType);
         return a;
     }
 }

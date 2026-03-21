@@ -119,19 +119,15 @@ public class MessageRepository : IMessageRepository
             LIMIT @PageSize OFFSET @Offset;
             """;
 
-        command.AddParameters(
-            new
-            {
-                Search = searchParam,
-                PageSize = pageSize,
-                Offset = offset,
-            }
+        command.Parameters.Add(
+            new NpgsqlParameter("Search", NpgsqlDbType.Text) { Value = searchParam ?? (object)DBNull.Value }
         );
+        command.AddParameters(new { PageSize = pageSize, Offset = offset });
 
         var total = 0;
         var items = await command.ExecuteListAsync(reader =>
         {
-            total = reader.GetInt32(reader.GetOrdinal("total_count"));
+            total = (int)reader.GetInt64(reader.GetOrdinal("total_count"));
             return MapToMessage(reader);
         });
 

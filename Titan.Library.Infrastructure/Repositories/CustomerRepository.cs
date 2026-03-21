@@ -23,8 +23,8 @@ public class CustomerRepository : ICustomerRepository
 
         command.CommandText = $"""
             WITH inserted AS (
-                INSERT INTO {T.Table} ({C.Name}, {C.Email}, {C.PasswordHash}, {C.PasswordSalt})
-                VALUES (@Name, @Email, @PasswordHash, @PasswordSalt)
+                INSERT INTO {T.Table} ({C.Name}, {C.Email}, {C.PasswordHash}, {C.PasswordSalt}, {C.UserType})
+                VALUES (@Name, @Email, @PasswordHash, @PasswordSalt, @UserType)
                 RETURNING id
             )
             INSERT INTO {CT.Table} ({CT.UserId}) SELECT id FROM inserted RETURNING {CT.UserId};
@@ -37,6 +37,7 @@ public class CustomerRepository : ICustomerRepository
                 entity.Email,
                 entity.PasswordHash,
                 entity.PasswordSalt,
+                UserType = entity.UserType.ToString().ToLower(),
             }
         );
 
@@ -89,7 +90,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.{C.IsDeleted} = FALSE;
@@ -103,7 +104,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.id = @Id AND u.{C.IsDeleted} = FALSE;
@@ -119,7 +120,7 @@ public class CustomerRepository : ICustomerRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt}, u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType}
             FROM {T.Table} u
             INNER JOIN {CT.Table} c ON u.id = c.{CT.UserId}
             WHERE u.{C.Email} = @Email AND u.{C.IsDeleted} = FALSE;
@@ -142,6 +143,7 @@ public class CustomerRepository : ICustomerRepository
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
             IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
+            UserType = Enum.Parse<UserType>(reader.GetString(reader.GetOrdinal(C.UserType)), true),
         };
         return Customer.Reconstitute(snapshot);
     }
