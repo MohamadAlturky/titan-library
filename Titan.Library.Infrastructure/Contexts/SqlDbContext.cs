@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using Titan.Library.Common.Storage;
 using Titan.Library.Infrastructure.Connectors;
 
 namespace Titan.Library.Infrastructure.Contexts;
@@ -31,19 +32,23 @@ public class SqlDbContext : ISqlDbContext
         return _connection;
     }
 
-    public async Task<DbTransaction> BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-        CancellationToken ct = default)
+    public async Task BeginTransactionAsync(
+        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+        CancellationToken ct = default
+    )
     {
-        if (_transaction != null) return _transaction;
+        if (_transaction != null)
+            return;
 
         var conn = await GetOpenConnectionAsync(ct);
         _transaction = await conn.BeginTransactionAsync(isolationLevel, ct);
-        return _transaction;
+        return;
     }
 
     public async Task CommitAsync(CancellationToken ct = default)
     {
-        if (_transaction == null) throw new InvalidOperationException("No active transaction to commit.");
+        if (_transaction == null)
+            throw new InvalidOperationException("No active transaction to commit.");
 
         await _transaction.CommitAsync(ct);
         await _transaction.DisposeAsync();
@@ -74,7 +79,8 @@ public class SqlDbContext : ISqlDbContext
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _transaction?.Dispose();
         _connection?.Dispose();
         _disposed = true;
@@ -82,9 +88,12 @@ public class SqlDbContext : ISqlDbContext
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
-        if (_transaction != null) await _transaction.DisposeAsync();
-        if (_connection != null) await _connection.DisposeAsync();
+        if (_disposed)
+            return;
+        if (_transaction != null)
+            await _transaction.DisposeAsync();
+        if (_connection != null)
+            await _connection.DisposeAsync();
         _disposed = true;
     }
 }

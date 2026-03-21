@@ -43,6 +43,7 @@ public static class ApplicationMessageKeys
     public const string CUSTOMER_NOT_FOUND_FOR_BORROW = nameof(CUSTOMER_NOT_FOUND_FOR_BORROW);
     public const string BOOK_ALREADY_BORROWED_BY_CUSTOMER = nameof(BOOK_ALREADY_BORROWED_BY_CUSTOMER);
     public const string BORROW_CREATED_SUCCESSFULLY = nameof(BORROW_CREATED_SUCCESSFULLY);
+    public const string BORROW_CONCURRENCY_CONFLICT = nameof(BORROW_CONCURRENCY_CONFLICT);
     public const string BORROW_NOT_FOUND = nameof(BORROW_NOT_FOUND);
     public const string BOOK_ALREADY_RETURNED = nameof(BOOK_ALREADY_RETURNED);
     public const string BOOK_RETURNED_SUCCESSFULLY = nameof(BOOK_RETURNED_SUCCESSFULLY);

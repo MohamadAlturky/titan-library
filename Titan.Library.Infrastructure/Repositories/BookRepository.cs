@@ -133,6 +133,80 @@ public class BookRepository : IBookRepository
         return await command.ExecuteListAsync(MapToBook);
     }
 
+    // -------------------------------------------------------------------------
+    // Concurrency strategy methods
+    // -------------------------------------------------------------------------
+
+    public async Task<bool> TryMarkUnavailable(int bookId)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            UPDATE {T.Table}
+            SET {C.IsAvailable} = false
+            WHERE {C.Id} = @Id AND {C.IsAvailable} = true;
+            """;
+
+        command.AddParameters(new { Id = bookId });
+
+        var rows = await command.ExecuteNonQuerySafeAsync();
+        return rows == 1;
+    }
+
+    public async Task<Book?> FindByIdForUpdate(int id)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}
+            FROM {T.Table}
+            WHERE {C.Id} = @Id
+            FOR UPDATE;
+            """;
+
+        command.AddParameters(new { Id = id });
+
+        return await command.ExecuteSingleOrDefaultAsync(MapToBook);
+    }
+
+    public async Task<(Book Book, long Xmin)?> FindByIdWithVersion(int id)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable},
+                   xmin::text::bigint AS row_version
+            FROM {T.Table}
+            WHERE {C.Id} = @Id;
+            """;
+
+        command.AddParameters(new { Id = id });
+
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            return null;
+
+        var book = MapToBook(reader);
+        var xmin = reader.GetInt64(reader.GetOrdinal("row_version"));
+        return (book, xmin);
+    }
+
+    public async Task<bool> TryUpdateWithVersion(int bookId, long xmin)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            UPDATE {T.Table}
+            SET {C.IsAvailable} = false
+            WHERE {C.Id} = @Id AND xmin::text::bigint = @Xmin;
+            """;
+
+        command.AddParameters(new { Id = bookId, Xmin = xmin });
+
+        var rows = await command.ExecuteNonQuerySafeAsync();
+        return rows == 1;
+    }
+
     private static Book MapToBook(DbDataReader reader)
     {
         var snapshot = new BookSnapshot

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using Titan.Library.Common.Auth;
+using Titan.Library.Common.Storage;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Common.Caching;
@@ -53,6 +54,7 @@ public static class InfrastructureBootstrapper
             connectionString
         ));
         services.AddScoped<ISqlDbContext, SqlDbContext>();
+        services.AddScoped<IAsyncUnitOfWork>(sp => sp.GetRequiredService<ISqlDbContext>());
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();

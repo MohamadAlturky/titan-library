@@ -8,4 +8,5 @@ public sealed class CorrelationIdProvider : ICorrelationIdProvider
 
     public string CorrelationId => _correlationId;
 
+    public void Set(string correlationId) => _correlationId = correlationId;
 }

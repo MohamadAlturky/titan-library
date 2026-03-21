@@ -1,9 +1,7 @@
+using Titan.Library.Application.Borrows.Strategies;
 using Titan.Library.Common.Cqrs;
 using Titan.Library.Common.Results;
 using Titan.Library.Contracts.Borrows;
-using Titan.Library.Domain.Books;
-using Titan.Library.Domain.Borrows;
-using Titan.Library.Domain.Users;
 
 namespace Titan.Library.Application.Borrows;
 
@@ -27,61 +25,32 @@ public class BorrowBookCommandValidator : ICommandValidator<BorrowBookCommand, B
     }
 }
 
+/// <summary>
+/// Single MediatR handler that delegates all concurrency logic to the
+/// registered <see cref="IBorrowConcurrencyStrategy"/>.
+///
+/// To switch strategies, change the DI registration in
+/// <c>ApplicationBootstrapper.AddApplication</c>:
+///
+///   services.AddScoped&lt;IBorrowConcurrencyStrategy, AtomicUpdateBorrowStrategy&gt;();       // Strategy 1
+///   services.AddScoped&lt;IBorrowConcurrencyStrategy, PessimisticLockingBorrowStrategy&gt;();  // Strategy 2
+///   services.AddScoped&lt;IBorrowConcurrencyStrategy, OptimisticLockingBorrowStrategy&gt;();   // Strategy 3
+///   services.AddScoped&lt;IBorrowConcurrencyStrategy, SerializableBorrowStrategy&gt;();        // Strategy 4
+/// </summary>
 public class BorrowBookCommandHandler : BaseCommandHandler<BorrowBookCommand, BorrowDto>
 {
     public override ICommandValidator<BorrowBookCommand, BorrowDto> Validator { get; set; } =
         new BorrowBookCommandValidator();
 
-    private readonly ICustomerRepository _customerRepository;
-    private readonly IBookRepository _bookRepository;
-    private readonly IBorrowRepository _borrowRepository;
+    private readonly IBorrowConcurrencyStrategy _strategy;
 
-    public BorrowBookCommandHandler(
-        ICustomerRepository customerRepository,
-        IBookRepository bookRepository,
-        IBorrowRepository borrowRepository
-    )
+    public BorrowBookCommandHandler(IBorrowConcurrencyStrategy strategy)
     {
-        _customerRepository = customerRepository;
-        _bookRepository = bookRepository;
-        _borrowRepository = borrowRepository;
+        _strategy = strategy;
     }
 
-    protected override async Task<Result<BorrowDto>> InnerHandle(
+    protected override Task<Result<BorrowDto>> InnerHandle(
         BorrowBookCommand request,
         CancellationToken cancellationToken
-    )
-    {
-        var customer = await _customerRepository.FindById(request.CustomerId);
-        if (customer is null)
-            return Result<BorrowDto>.Fail(ApplicationMessageKeys.CUSTOMER_NOT_FOUND_FOR_BORROW);
-
-        var book = await _bookRepository.FindById(request.BookId);
-        if (book is null)
-            return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_NOT_FOUND);
-
-        if (!book.IsAvailable)
-            return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_NOT_AVAILABLE);
-
-        var existingBorrow = await _borrowRepository.FindActiveBorrowByCustomerAndBook(
-            request.CustomerId,
-            request.BookId
-        );
-        if (existingBorrow is not null)
-            return Result<BorrowDto>.Fail(ApplicationMessageKeys.BOOK_ALREADY_BORROWED_BY_CUSTOMER);
-
-        var borrow = Borrow.Create(request.CustomerId, request.BookId);
-        var borrowId = await _borrowRepository.Add(borrow);
-        borrow.Id = borrowId;
-
-        book.IsAvailable = false;
-        await _bookRepository.Update(book);
-
-        var borrowDto = BorrowDto.FromEntity(borrow);
-
-        return Result<BorrowDto>.Success(
-            borrowDto,
-            ApplicationMessageKeys.BORROW_CREATED_SUCCESSFULLY
-        );
-    }
+    ) => _strategy.ExecuteAsync(request, cancellationToken);
 }
