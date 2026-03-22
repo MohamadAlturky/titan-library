@@ -62,6 +62,7 @@ public class CreateBookCommandHandler : BaseCommandHandler<CreateBookCommand, Bo
             Title = request.Title,
             AuthorId = request.AuthorId,
             CreatedAt = DateTime.Now,
+            IsAvailable = true,
         };
         var bookId = await _bookRepository.Add(book);
         book.Id = bookId;

@@ -1,4 +1,6 @@
 using System.Data.Common;
+using Npgsql;
+using NpgsqlTypes;
 using Titan.Library.Domain.Books;
 using Titan.Library.Infrastructure.AdoExtensions;
 using Titan.Library.Infrastructure.Configurations;
@@ -22,8 +24,8 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title}, {C.IsAvailable})
-            VALUES (@Isbn, @AuthorId, @Title, @IsAvailable)
+            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title}, {C.IsAvailable}, {C.IsDeleted})
+            VALUES (@Isbn, @AuthorId, @Title, @IsAvailable, FALSE)
             RETURNING {C.Id};
             """;
 
@@ -47,7 +49,7 @@ public class BookRepository : IBookRepository
         command.CommandText = $"""
             UPDATE {T.Table}
             SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title, {C.IsAvailable} = @IsAvailable
-            WHERE {C.Id} = @Id;
+            WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;
             """;
 
         command.AddParameters(
@@ -68,7 +70,7 @@ public class BookRepository : IBookRepository
     {
         await using var command = await _dbContext.CreateCommandAsync();
 
-        command.CommandText = $"DELETE FROM {T.Table} WHERE {C.Id} = @Id;";
+        command.CommandText = $"UPDATE {T.Table} SET {C.IsDeleted} = TRUE WHERE {C.Id} = @Id;";
 
         command.AddParameters(new { entity.Id });
 
@@ -80,7 +82,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table};";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.IsDeleted} = FALSE;";
 
         return await command.ExecuteListAsync(MapToBook);
     }
@@ -90,7 +92,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Id} = @Id;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Id = id });
 
@@ -102,7 +104,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Isbn} = @Isbn;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Isbn} = @Isbn AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Isbn = isbn });
 
@@ -114,7 +116,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.Title} ILIKE @Title;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Title} ILIKE @Title AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Title = $"%{title}%" });
 
@@ -126,7 +128,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { AuthorId = authorId });
 
@@ -158,9 +160,9 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted}
             FROM {T.Table}
-            WHERE {C.Id} = @Id
+            WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE
             FOR UPDATE;
             """;
 
@@ -174,10 +176,10 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable},
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
                    xmin::text::bigint AS row_version
             FROM {T.Table}
-            WHERE {C.Id} = @Id;
+            WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;
             """;
 
         command.AddParameters(new { Id = id });
@@ -207,6 +209,66 @@ public class BookRepository : IBookRepository
         return rows == 1;
     }
 
+    public async Task<(List<Book> items, int total)> GetAuthorBooksPaginated(
+        int authorId,
+        string? search,
+        bool? isAvailable,
+        string sortColumn,
+        bool ascending,
+        int page,
+        int pageSize
+    )
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        var direction = ascending ? "ASC" : "DESC";
+        var allowedSortColumns = new HashSet<string> { "id", "title", "isbn", "is_available" };
+        var orderBy = allowedSortColumns.Contains(sortColumn) ? sortColumn : "id";
+        var searchParam = search is not null ? $"%{search}%" : null;
+        var offset = (page - 1) * pageSize;
+
+        command.CommandText = $"""
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
+                    COUNT(*) OVER() AS total_count
+            FROM {T.Table}
+            WHERE {C.AuthorId} = @AuthorId
+                AND {C.IsDeleted} = FALSE
+                AND (@IsAvailable::boolean IS NULL OR {C.IsAvailable} = @IsAvailable)
+                AND (@Search IS NULL OR {C.Title} ILIKE @Search OR {C.Isbn} ILIKE @Search)
+            ORDER BY {orderBy} {direction}
+            LIMIT @PageSize OFFSET @Offset;
+            """;
+
+        command.AddParameters(
+            new
+            {
+                AuthorId = authorId,
+                IsAvailable = isAvailable,
+                PageSize = pageSize,
+                Offset = offset,
+            }
+        );
+        command.Parameters.Add(
+            new NpgsqlParameter("Search", NpgsqlDbType.Text)
+            {
+                Value = searchParam ?? (object)DBNull.Value,
+            }
+        );
+
+        var items = new List<Book>();
+        var total = 0;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (total == 0)
+                total = reader.GetInt32(reader.GetOrdinal("total_count"));
+            items.Add(MapToBook(reader));
+        }
+
+        return (items, total);
+    }
+
     private static Book MapToBook(DbDataReader reader)
     {
         var snapshot = new BookSnapshot
@@ -217,6 +279,7 @@ public class BookRepository : IBookRepository
             Title = reader.GetString(reader.GetOrdinal(C.Title)),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsAvailable = reader.GetBoolean(reader.GetOrdinal(C.IsAvailable)),
+            IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
         };
         return Book.Reconstitute(snapshot);
     }

@@ -10,6 +10,9 @@ public class Book : BaseEntity<int>
     public int AuthorId { get; set; }
     public string Title { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
+    public bool IsDeleted { get; private set; }
+
+    public void Delete() => IsDeleted = true;
 
     public Author Author { get; set; } = null!;
     public List<Borrow> Borrows { get; set; } = [];
@@ -23,6 +26,7 @@ public class Book : BaseEntity<int>
             Title = Title,
             CreatedAt = CreatedAt,
             IsAvailable = IsAvailable,
+            IsDeleted = IsDeleted,
         };
 
     public static Book Reconstitute(BookSnapshot snapshot) =>
@@ -34,6 +38,7 @@ public class Book : BaseEntity<int>
             Title = snapshot.Title,
             CreatedAt = snapshot.CreatedAt,
             IsAvailable = snapshot.IsAvailable,
+            IsDeleted = snapshot.IsDeleted,
         };
 }
 

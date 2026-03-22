@@ -8,6 +8,16 @@ public interface IBookRepository : IBaseRepository<Book, int>
     Task<IEnumerable<Book>> FindByTitle(string title);
     Task<IEnumerable<Book>> FindByAuthorId(int authorId);
 
+    Task<(List<Book> items, int total)> GetAuthorBooksPaginated(
+        int authorId,
+        string? search,
+        bool? isAvailable,
+        string sortColumn,
+        bool ascending,
+        int page,
+        int pageSize
+    );
+
     // --- Concurrency strategy methods ---
 
     /// <summary>Strategy 1 – Atomic Update: UPDATE … WHERE is_available = true</summary>

@@ -8,4 +8,5 @@ public sealed class BookSnapshot
     public string Title { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public bool IsAvailable { get; init; }
+    public bool IsDeleted { get; init; }
 }

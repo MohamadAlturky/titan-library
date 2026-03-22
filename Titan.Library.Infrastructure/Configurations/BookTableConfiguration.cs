@@ -12,5 +12,6 @@ public static class BookTableConfiguration
         public const string Title = "title";
         public const string CreatedAt = "created_at";
         public const string IsAvailable = "is_available";
+        public const string IsDeleted = "is_deleted";
     }
 }
