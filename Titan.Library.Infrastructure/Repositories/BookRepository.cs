@@ -7,6 +7,7 @@ using Titan.Library.Infrastructure.Configurations;
 using Titan.Library.Infrastructure.Contexts;
 using C = Titan.Library.Infrastructure.Configurations.BookTableConfiguration.Columns;
 using T = Titan.Library.Infrastructure.Configurations.BookTableConfiguration;
+using UC = Titan.Library.Infrastructure.Configurations.UserTableConfiguration;
 
 namespace Titan.Library.Infrastructure.Repositories;
 
@@ -267,6 +268,91 @@ public class BookRepository : IBookRepository
         }
 
         return (items, total);
+    }
+
+    public async Task<(List<BookWithAuthor> items, bool hasMore, int? nextCursor)> GetCustomerBooksCursor(
+        string? search,
+        bool? isAvailable,
+        int? cursor,
+        int pageSize
+    )
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        var searchParam = search is not null ? $"%{search}%" : null;
+        var fetchSize = pageSize + 1;
+
+        command.CommandText = $"""
+            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
+                   u.name AS author_name, u.email AS author_email
+            FROM {T.Table} b
+            INNER JOIN {UC.Table} u ON b.{C.AuthorId} = u.id
+            WHERE b.{C.IsDeleted} = FALSE
+                AND (@IsAvailable::boolean IS NULL OR b.{C.IsAvailable} = @IsAvailable)
+                AND (@Search IS NULL OR b.{C.Title} ILIKE @Search OR b.{C.Isbn} ILIKE @Search)
+                AND (@Cursor::int IS NULL OR b.{C.Id} > @Cursor)
+            ORDER BY b.{C.Id} ASC
+            LIMIT @FetchSize;
+            """;
+
+        command.AddParameters(new { IsAvailable = isAvailable, FetchSize = fetchSize });
+        command.Parameters.Add(
+            new NpgsqlParameter("Search", NpgsqlDbType.Text)
+            {
+                Value = searchParam ?? (object)DBNull.Value,
+            }
+        );
+        command.Parameters.Add(
+            new NpgsqlParameter("Cursor", NpgsqlDbType.Integer)
+            {
+                Value = cursor.HasValue ? cursor.Value : DBNull.Value,
+            }
+        );
+
+        var items = await command.ExecuteListAsync(MapToBookWithAuthor);
+
+        var hasMore = items.Count > pageSize;
+        if (hasMore)
+            items.RemoveAt(items.Count - 1);
+
+        var nextCursor = hasMore ? items[^1].Book.Id : (int?)null;
+
+        return (items, hasMore, nextCursor);
+    }
+
+    public async Task<BookWithAuthor?> GetBookWithAuthorById(int id)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
+                   u.name AS author_name, u.email AS author_email
+            FROM {T.Table} b
+            INNER JOIN {UC.Table} u ON b.{C.AuthorId} = u.id
+            WHERE b.{C.Id} = @Id AND b.{C.IsDeleted} = FALSE;
+            """;
+
+        command.AddParameters(new { Id = id });
+
+        return await command.ExecuteSingleOrDefaultAsync(MapToBookWithAuthor);
+    }
+
+    private static BookWithAuthor MapToBookWithAuthor(DbDataReader reader)
+    {
+        var snapshot = new BookSnapshot
+        {
+            Id = reader.GetInt32(reader.GetOrdinal(C.Id)),
+            Isbn = reader.GetString(reader.GetOrdinal(C.Isbn)),
+            AuthorId = reader.GetInt32(reader.GetOrdinal(C.AuthorId)),
+            Title = reader.GetString(reader.GetOrdinal(C.Title)),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
+            IsAvailable = reader.GetBoolean(reader.GetOrdinal(C.IsAvailable)),
+            IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
+        };
+        var book = Book.Reconstitute(snapshot);
+        var authorName = reader.GetString(reader.GetOrdinal("author_name"));
+        var authorEmail = reader.GetString(reader.GetOrdinal("author_email"));
+        return new BookWithAuthor(book, authorName, authorEmail);
     }
 
     private static Book MapToBook(DbDataReader reader)

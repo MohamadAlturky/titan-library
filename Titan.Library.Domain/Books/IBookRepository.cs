@@ -18,6 +18,15 @@ public interface IBookRepository : IBaseRepository<Book, int>
         int pageSize
     );
 
+    Task<(List<BookWithAuthor> items, bool hasMore, int? nextCursor)> GetCustomerBooksCursor(
+        string? search,
+        bool? isAvailable,
+        int? cursor,
+        int pageSize
+    );
+
+    Task<BookWithAuthor?> GetBookWithAuthorById(int id);
+
     // --- Concurrency strategy methods ---
 
     /// <summary>Strategy 1 – Atomic Update: UPDATE … WHERE is_available = true</summary>
