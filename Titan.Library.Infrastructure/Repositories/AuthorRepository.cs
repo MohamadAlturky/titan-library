@@ -37,7 +37,7 @@ public class AuthorRepository : IAuthorRepository
                 entity.Email,
                 entity.PasswordHash,
                 entity.PasswordSalt,
-                UserType = entity.UserType.ToString().ToLower(),
+                UserType = ((int)entity.UserType),
             }
         );
 

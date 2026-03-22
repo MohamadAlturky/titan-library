@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.AdoExtensions;
@@ -115,7 +116,7 @@ public class UserRepository : IUserRepository
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
             IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
-            UserType = Enum.Parse<UserType>(reader.GetString(reader.GetOrdinal(C.UserType)), true),
+            UserType = (UserType)reader.GetInt32(reader.GetOrdinal(C.UserType)),
         };
 
         return snapshot.UserType switch
@@ -123,7 +124,10 @@ public class UserRepository : IUserRepository
             UserType.Customer => Customer.Reconstitute(snapshot),
             UserType.Author => Author.Reconstitute(snapshot),
             UserType.Admin => Admin.Reconstitute(snapshot),
-            _ => throw new ArgumentOutOfRangeException(nameof(snapshot.UserType), $"Unexpected value: {snapshot.UserType}"),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(snapshot.UserType),
+                $"Unexpected value: {snapshot.UserType}"
+            ),
         };
     }
 }

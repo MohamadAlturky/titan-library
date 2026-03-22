@@ -32,7 +32,6 @@ export function AuthorMyBooksPage() {
   const { user } = useAuth();
   const author = mockAuthors.find(a => a.email === user?.email);
   const myBooks = author ? mockBooks.filter(b => b.authorId === author.id) : [];
-
   return (
     <div>
       <PageHeader

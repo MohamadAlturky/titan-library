@@ -39,7 +39,7 @@ public class UserAuthenticationEndpoints : EndpointGroupBase
             .WithSummary("Get the authenticated user's profile (Customer, Author or admin)")
             .Produces(StatusCodes.Status200OK, typeof(UserProfileDto))
             .Produces(StatusCodes.Status400BadRequest, typeof(ProblemDetails))
-            .RequireUserType(UserTypeValues.Customer, UserTypeValues.Author);
+            .RequireUserType(UserTypeValues.Customer, UserTypeValues.Author, UserTypeValues.Admin);
     }
 
     private async Task<IResult> LoginAsync(

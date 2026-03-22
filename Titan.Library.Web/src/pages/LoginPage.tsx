@@ -1,25 +1,49 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Library } from 'lucide-react';
-import { mockUsers } from '@/data/mockUsers';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
+import { userAuthenticationService } from '@/services/userAuthenticationService';
+import { setTokenCookie } from '@/lib/api';
 import type { UserRole } from '@/types';
 
-const roleGroups: UserRole[] = ['admin', 'customer', 'author'];
+function mapUserType(userType: string): UserRole {
+  if (userType === 'admin') return 'admin';
+  if (userType === 'author') return 'author';
+  return 'customer';
+}
 
 export function LoginPage() {
-  const [selectedId, setSelectedId] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    const user = mockUsers.find(u => u.id === selectedId);
-    if (!user) return;
-    login(user);
-    if (user.role === 'admin') navigate('/admin/books');
-    else if (user.role === 'customer') navigate('/customer/books');
-    else navigate('/author/my-books');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const tokenRes = await userAuthenticationService.login({ email, password });
+      const { token, userId, userType } = tokenRes.data;
+
+      setTokenCookie(token);
+
+      const role = mapUserType(userType);
+      login({ id: String(userId), name: email, email, role, token });
+
+      if (role === 'admin') navigate('/admin/books');
+      else if (role === 'author') navigate('/author/my-books');
+      else navigate('/customer/books');
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        'Invalid email or password';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,37 +57,46 @@ export function LoginPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Select User
+              Email
             </label>
-            <select
-              value={selectedId}
-              onChange={e => setSelectedId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">-- Choose a user --</option>
-              {roleGroups.map(role => (
-                <optgroup key={role} label={role.charAt(0).toUpperCase() + role.slice(1)}>
-                  {mockUsers
-                    .filter(u => u.role === role)
-                    .map(u => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
-                    ))}
-                </optgroup>
-              ))}
-            </select>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
 
-          <Button
-            onClick={handleLogin}
-            disabled={!selectedId}
-            className="w-full"
-          >
-            Sign In
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Signing in…' : 'Sign In'}
           </Button>
-        </div>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-indigo-600 hover:underline font-medium">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

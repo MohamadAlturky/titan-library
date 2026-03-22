@@ -17,6 +17,9 @@ builder.Host.UseSerilog(
         config.ReadFrom.Configuration(ctx.Configuration).Enrich.With<ActivityEnricher>()
 );
 
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddObservability(builder.Configuration);
@@ -30,6 +33,7 @@ var app = builder.Build();
 var context = app.Services.GetRequiredService<IHttpContextAccessor>();
 AppHttpContext.Configure(context);
 
+app.UseCors();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
