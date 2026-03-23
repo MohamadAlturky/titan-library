@@ -1,107 +1,92 @@
-# Titan Library Api
+# Titan Library API
 
-> in the following sections we will explain the system and how we build it.
+> The following sections explain the system and how it was built.
 
-## Common layer
+## Common Layer
 
-you can see it as a generic layer we can ship it to any project
-it contains the conventions and the abstractions for the architecture.
+Think of this as a generic layer that can be shipped to any project. It contains the conventions and abstractions for the overall architecture.
 
 ## Domain Layer
 
-here is the important layer where we will explain the buisness rules.
-it is splited by subdomains and contains
+This is the most important layer, where the business rules live. It is split by subdomains and contains:
 
-- the factories for enforce the buisness rules
-- the abstractions for data access with the snapshot pattern to split the data concerns from the domain concerns.
+- Factories that enforce the business rules
+- Abstractions for data access, using the snapshot pattern to separate data concerns from domain concerns
 
-for the users subdomain we have the users with inheritance behavior to abstract the users operations
-from the concrete operations for the author and customer.
+For the users subdomain, inheritance is used to abstract shared user operations away from the concrete implementations for authors and customers.
 
 ## Contracts Layer
 
-contains some of the abstractions that is belongs to the domain like dto, might be service interfaces.
+Contains abstractions that belong to the domain, such as DTOs and service interfaces.
 
-why i always use this layer
-the dtos is a very complex thing in app, i always have problem handling the different types of dtos in the system
-because some use cases need returns some data diferent from other use cases, and some times you need to create a hiraricy between these dtos to not repeat yourself and not multible models for the same thing.
+**Why this layer exists:**
+DTOs are surprisingly complex to manage in a large application. Different use cases often need to return slightly different shapes of data, and without a dedicated place for them, you end up either duplicating models or creating an uncontrolled mess. This layer provides a hierarchy for DTOs so you can reuse and extend them cleanly.
 
 ## Application Layer
 
-contains the use cases of the app on top of the domain layer
-with the abstractions for the commands and the quries CQRS.
-we have implemented an abstraction on top on the commands to handle the validation using the step design pattern.
-the application layer uses the result pattern to identify success and failed senarios and return a proper message using predefined message key for each senario.
+Contains the use cases of the application, built on top of the domain layer, with abstractions for commands and queries (CQRS).
 
-## Endpoints layer
+A validation abstraction is implemented on top of commands using the step design pattern. The application layer uses the result pattern to distinguish between success and failure scenarios and returns a descriptive message using predefined message keys for each case.
 
-contains the minimal apis implementation that depends of the application layer that defines the http endpoints for getting the right data from the user and call the right command or query.
+## Endpoints Layer
 
-## Infrastructure layer
+Contains the Minimal API implementation. It depends on the application layer and defines the HTTP endpoints responsible for receiving data from the client and dispatching the appropriate command or query.
 
-contains the implementation for the external concerns of the app:
+## Infrastructure Layer
 
-- db utils and repositoies implementation with ado.net the tabels structure defined in configuration classes
-and there is some ADO extention methods to helps the development
-- caching using redis
+Contains the implementation for all external concerns of the application:
 
-## Api Layer
+- Database utilities and repository implementations using ADO.NET, with table structure defined in configuration classes and ADO extension methods to speed up development
+- Caching using Redis
 
-this is the start up project for the backend here it contains no implementation just defines the required things to run the app.
-uses scalar for documentation.
+## API Layer
+
+This is the startup project for the backend. It contains no business logic — it only wires up everything needed to run the application. Uses Scalar for API documentation.
 
 ## Tools
 
-### Db migration creator
+### DB Migration Creator
 
-one of the biggest problems in the development when using ado is how we can make migrations to the db to execute DDL queries.
-in ef core it handles that internally with its own migration tools dotnet-ef so we copied the approach by
-creating an abstraction for IMigration and the app on the start up will look for the migrations table and apply the new migrations that is not applied like efcore
-the responsibily for the tool is just creating the file in a convention that runs without any error.
-the responsibilty of the develper is defining the DDL inside the generated class.
+One of the bigger challenges when using ADO.NET is managing database migrations for DDL queries. Entity Framework Core handles this internally with its own `dotnet-ef` tooling, so we took the same approach: there is an `IMigration` abstraction, and on startup the app checks the migrations table and applies any pending migrations — just like EF Core.
 
-## Web layer
+The tool's responsibility is generating a migration file in the correct convention so it runs without errors. The developer's responsibility is filling in the DDL inside the generated class.
 
-implemented using react single page app, with different routs and layouts for customers authors and admins.
-contains services uses axois to define the api calls and uses axios interceptors to handle auth headers and invalid token cases.
-there is custom hooks for auth and theme.
+## Web Layer
+
+Implemented as a React single-page application with separate routes and layouts for customers, authors, and admins. Contains service modules that use Axios to define API calls, along with Axios interceptors to handle auth headers and invalid token scenarios. Custom hooks are provided for authentication and theming.
 
 ## App Startup Seeders
 
-when run the app there is three operations on db:
+When the application starts, three operations run against the database:
 
-- apply migrations
-- seed messages
-- seed admin
+- Apply migrations
+- Seed messages
+- Seed admin
 
-## Backend messages handling
+## Backend Message Handling
 
-the application layer returns message keys to the api layer
-all of the message keys are defined in a static class
-it is seeded in the startup
-the admin can edit this messages
-and in the api layer it takes a message key and uses the api response resolver to return a proper response.
+The application layer returns message keys to the API layer. All message keys are defined in a static class, seeded on startup, and can be edited by the admin. The API layer receives a message key and uses an API response resolver to return an appropriate response to the client.
 
 ## Exception Handling
 
-we use an exception middle ware to handle all of the unexpeted errors log them and return a message to the user
+A middleware component handles all unexpected exceptions — it logs the error and returns a user-friendly message.
 
-## Logging and Opentelemetry
+## Logging and OpenTelemetry
 
-we used serilog and seq as a sink to add logging to the system in a structured way and see the logs in a centralized ui.
+Serilog is used for structured logging with Seq as the sink, giving a centralized UI for viewing logs.
 
-## Docker setup
+## Docker Setup
 
-we used docker compose to define the services of the app.
+Docker Compose is used to define all application services:
 
-- front end
-- backend
-- postegres
-- redis
-- promethuse for store opentelemetry data
-- redis opentelemetry data exporter
-- postegres opentelemetry data exporter
-- grafana for view opentelemetry data exporter in dashboards
-- seq service for store the logs and serve the ui
+- Frontend
+- Backend
+- PostgreSQL
+- Redis
+- Prometheus for storing OpenTelemetry data
+- Redis OpenTelemetry exporter
+- PostgreSQL OpenTelemetry exporter
+- Grafana for visualizing OpenTelemetry data in dashboards
+- Seq for storing logs and serving the UI
 
-and we defined the volums for them to ensure persistence.
+Volumes are defined for all stateful services to ensure data persistence.
