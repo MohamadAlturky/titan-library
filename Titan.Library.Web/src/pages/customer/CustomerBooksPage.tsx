@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BookOpen, Search, X, Share2, Info,
+  BookOpen, Search, X, Share2, ArrowRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -49,28 +49,32 @@ function coverGradient(id: number) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden animate-pulse">
-      {/* Header */}
-      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
-        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700" />
-        <div className="flex-1 space-y-1.5">
-          <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-1/2" />
-          <div className="h-2.5 bg-gray-100 dark:bg-zinc-800 rounded w-1/3" />
+    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden animate-pulse flex flex-col h-full">
+      {/* Cover Skeleton */}
+      <div className="h-48 w-full bg-gray-200 dark:bg-zinc-800 shrink-0" />
+      
+      {/* Body Skeleton */}
+      <div className="p-5 flex flex-col flex-1 gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 w-full">
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 shrink-0" />
+            <div className="space-y-1.5 flex-1">
+              <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-2/3" />
+              <div className="h-2.5 bg-gray-100 dark:bg-zinc-800 rounded w-1/3" />
+            </div>
+          </div>
+          <div className="w-16 h-5 bg-gray-100 dark:bg-zinc-800 rounded-full shrink-0" />
         </div>
-        <div className="w-16 h-5 bg-gray-100 dark:bg-zinc-800 rounded-full" />
+        <div className="space-y-2 mt-2">
+          <div className="h-3 bg-gray-100 dark:bg-zinc-800 rounded w-full" />
+          <div className="h-3 bg-gray-100 dark:bg-zinc-800 rounded w-5/6" />
+        </div>
       </div>
-      {/* Cover */}
-      <div className="h-52 bg-gray-200 dark:bg-zinc-800 mx-4 rounded-xl" />
-      {/* Actions */}
-      <div className="px-4 py-3 flex items-center gap-4">
-        <div className="h-5 w-12 bg-gray-100 dark:bg-zinc-800 rounded" />
-        <div className="h-5 w-8 bg-gray-100 dark:bg-zinc-800 rounded" />
-        <div className="ml-auto h-5 w-16 bg-gray-100 dark:bg-zinc-800 rounded" />
-      </div>
-      {/* Caption */}
-      <div className="px-4 pb-4 space-y-1.5">
-        <div className="h-3.5 bg-gray-200 dark:bg-zinc-700 rounded w-3/4" />
-        <div className="h-3 bg-gray-100 dark:bg-zinc-800 rounded w-1/2" />
+
+      {/* Footer Skeleton */}
+      <div className="px-5 py-4 border-t border-gray-100 dark:border-zinc-800/50 flex items-center justify-between">
+        <div className="h-6 w-6 bg-gray-100 dark:bg-zinc-800 rounded-full" />
+        <div className="h-4 w-20 bg-gray-100 dark:bg-zinc-800 rounded" />
       </div>
     </div>
   );
@@ -85,7 +89,8 @@ interface BookCardProps {
 
 function BookCard({ book, onDetails }: BookCardProps) {
 
-  const handleShare = async () => {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevents card click when just sharing
     const url = `${window.location.origin}/customer/books/${book.id}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -96,93 +101,69 @@ function BookCard({ book, onDetails }: BookCardProps) {
   };
 
   return (
-    <article className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/30 transition-all duration-200">
-
-      {/* ── Post header ── */}
-      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
-        {/* Author avatar */}
-        <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${coverGradient(book.authorId)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-          {book.authorName.charAt(0).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 truncate leading-tight">
-            {book.authorName}
-          </p>
-          <p className="text-xs text-gray-400 dark:text-zinc-500 leading-tight">Author</p>
-        </div>
-        <Badge variant={book.isAvailable ? 'available' : 'borrowed'}>
-          {book.isAvailable ? 'Available' : 'Borrowed'}
-        </Badge>
+    <article 
+      onClick={() => onDetails(book.id)}
+      className="group cursor-pointer bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-400 dark:hover:border-indigo-500/50 transition-all duration-300 flex flex-col h-full"
+    >
+      {/* ── Expressive Cover ── */}
+      <div className={`relative h-48 w-full bg-gradient-to-br ${coverGradient(book.id)} p-6 flex flex-col items-center justify-center text-center overflow-hidden shrink-0`}>
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
+        <BookOpen size={32} className="text-white/80 mb-3 drop-shadow-sm shrink-0" strokeWidth={1.5} />
+        <h3 className="text-xl font-bold text-white leading-snug drop-shadow-md line-clamp-3 relative z-10">
+          {book.title}
+        </h3>
       </div>
 
-      {/* ── Cover "photo" ── */}
-      <div className={`mx-4 rounded-xl h-52 bg-gradient-to-br ${coverGradient(book.id)} flex flex-col items-center justify-center gap-2 relative overflow-hidden px-5`}>
-        {/* Decorative rings */}
-        {/* <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <div className="w-64 h-64 rounded-full border-[32px] border-white" />
+      {/* ── Body Content ── */}
+      <div className="p-5 flex flex-col flex-1 gap-4">
+        {/* Author & Badge */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${coverGradient(book.authorId)} flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm`}>
+              {book.authorName.charAt(0).toUpperCase()}
+            </div>
+            <div className="truncate">
+              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 truncate">
+                {book.authorName}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-zinc-400 font-mono mt-0.5 truncate">
+                ISBN: {book.isbn}
+              </p>
+            </div>
+          </div>
+          <Badge variant={book.isAvailable ? 'available' : 'borrowed'} className="shrink-0">
+            {book.isAvailable ? 'Available' : 'Borrowed'}
+          </Badge>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center opacity-5">
-          <div className="w-96 h-96 rounded-full border-[48px] border-white" />
-        </div> */}
-        <BookOpen size={36} className="text-white/90 shrink-0" strokeWidth={1.5} />
-        <p className="text-white/90 text-sm font-semibold text-center line-clamp-1 leading-snug drop-shadow w-full">
-          {book.title}
-        </p>
-        {book.description && (
-          <p className="text-white/70 text-xs text-center line-clamp-3 leading-relaxed w-full">
+
+        {/* Description */}
+        {book.description ? (
+          <p className="text-sm text-gray-600 dark:text-zinc-400 line-clamp-3 leading-relaxed flex-1 mt-1">
             {book.description}
+          </p>
+        ) : (
+          <p className="text-sm text-gray-400 dark:text-zinc-600 italic flex-1 mt-1">
+            No description available.
           </p>
         )}
       </div>
 
-      {/* ── Action bar ── */}
-      <div className="flex items-center gap-1 px-3 pt-3 pb-1">
-        {/* Love */}
-        {/* <button
-          onClick={handleLike}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors group"
-          aria-label={liked ? 'Unlike' : 'Like'}
-        >
-          <Heart
-            size={20}
-            className={liked
-              ? 'text-rose-500 fill-rose-500 scale-110 transition-transform'
-              : 'text-gray-400 dark:text-zinc-500 group-hover:text-rose-400 transition-colors'
-            }
-          />
-          <span className={`text-sm font-medium tabular-nums ${liked ? 'text-rose-500' : 'text-gray-500 dark:text-zinc-400'}`}>
-            {likeCount}
-          </span>
-        </button> */}
-
-        {/* Share */}
+      {/* ── Action Footer ── */}
+      <div className="px-5 py-3.5 border-t border-gray-100 dark:border-zinc-800/50 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-800/20 group-hover:bg-indigo-50/50 dark:group-hover:bg-indigo-500/10 transition-colors">
         <button
           onClick={handleShare}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors group"
+          className="p-2 -ml-2 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/50 transition-colors"
           aria-label="Share"
+          title="Share Book"
         >
-          <Share2 size={18} className="text-gray-400 dark:text-zinc-500 group-hover:text-indigo-500 transition-colors" />
-          <span className="text-sm font-medium text-gray-500 dark:text-zinc-400 group-hover:text-indigo-500 transition-colors">Share</span>
+          <Share2 size={18} />
         </button>
-
-        {/* Details */}
-        <button
-          onClick={() => onDetails(book.id)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group ml-auto"
-          aria-label="See details"
-        >
-          <Info size={18} className="text-gray-400 dark:text-zinc-500 group-hover:text-gray-700 dark:group-hover:text-zinc-200 transition-colors" />
-          <span className="text-sm font-medium text-gray-500 dark:text-zinc-400 group-hover:text-gray-700 dark:group-hover:text-zinc-200 transition-colors">Details</span>
-        </button>
+        <div className="text-sm font-medium text-gray-500 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1 transition-colors">
+          View Details 
+          <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+        </div>
       </div>
-
-      {/* ── Caption ── */}
-      <div className="px-4 pb-4 pt-1">
-        <p className="text-xs text-gray-400 dark:text-zinc-500 font-mono mt-0.5">
-          {book.isbn}
-        </p>
-      </div>
-
     </article>
   );
 }
@@ -345,7 +326,8 @@ export function CustomerBooksPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
+        {/* Note: I adjusted the grid-cols slightly to account for the taller, more expressive cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)
             : books.map(book => (
@@ -378,7 +360,7 @@ export function CustomerBooksPage() {
 
         {/* Load more */}
         {hasMore && !isLoading && (
-          <div className="flex justify-center mt-10">
+          <div className="flex justify-center mt-12">
             <Button
               variant="secondary"
               onClick={handleLoadMore}
@@ -392,7 +374,7 @@ export function CustomerBooksPage() {
 
         {/* Load more skeletons */}
         {isLoadingMore && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
             {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         )}
