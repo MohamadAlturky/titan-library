@@ -4,6 +4,7 @@ export interface AuthorBookDto {
   id: number;
   title: string;
   isbn: string;
+  description: string;
   authorId: number;
   isAvailable: boolean;
   createdAt: string;
@@ -29,11 +30,13 @@ export interface GetAuthorBooksParams {
 export interface CreateBookRequest {
   isbn: string;
   title: string;
+  description: string;
 }
 
 export interface UpdateBookRequest {
   isbn: string;
   title: string;
+  description: string;
 }
 
 export const authorBookService = {

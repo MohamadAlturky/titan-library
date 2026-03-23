@@ -9,6 +9,7 @@ public class Book : BaseEntity<int>
     public string Isbn { get; set; } = string.Empty;
     public int AuthorId { get; set; }
     public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
     public bool IsDeleted { get; private set; }
 
@@ -24,6 +25,7 @@ public class Book : BaseEntity<int>
             Isbn = Isbn,
             AuthorId = AuthorId,
             Title = Title,
+            Description = Description,
             CreatedAt = CreatedAt,
             IsAvailable = IsAvailable,
             IsDeleted = IsDeleted,
@@ -36,9 +38,9 @@ public class Book : BaseEntity<int>
             Isbn = snapshot.Isbn,
             AuthorId = snapshot.AuthorId,
             Title = snapshot.Title,
+            Description = snapshot.Description,
             CreatedAt = snapshot.CreatedAt,
             IsAvailable = snapshot.IsAvailable,
             IsDeleted = snapshot.IsDeleted,
         };
 }
-

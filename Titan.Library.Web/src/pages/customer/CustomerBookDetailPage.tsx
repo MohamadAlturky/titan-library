@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, BookOpen, Heart, Share2,
+  ArrowLeft, BookOpen, Share2,
   User, Mail, Hash, CalendarDays, BookCopy,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -24,10 +24,6 @@ const COVER_GRADIENTS = [
 
 function coverGradient(id: number) {
   return COVER_GRADIENTS[id % COVER_GRADIENTS.length];
-}
-
-function seedLikes(id: number) {
-  return ((id * 31 + 17) % 120) + 4;
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -82,25 +78,15 @@ export function CustomerBookDetailPage() {
   const [book, setBook] = useState<CustomerBookDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-
   useEffect(() => {
     if (!id) return;
-    setIsLoading(true);
     customerBookService.getBookById(Number(id))
       .then(res => {
         setBook(res.data);
-        setLikeCount(seedLikes(res.data.id));
       })
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));
   }, [id]);
-
-  const handleLike = () => {
-    setLiked(v => !v);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-  };
 
   const handleShare = async () => {
     try {
@@ -151,7 +137,7 @@ export function CustomerBookDetailPage() {
       <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm">
 
         {/* Cover "photo" */}
-        <div className={`w-full h-72 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-4 relative overflow-hidden`}>
+        <div className={`w-full h-72 bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-3 relative overflow-hidden px-10`}>
           {/* Decorative rings */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
             <div className="w-80 h-80 rounded-full border-[40px] border-white" />
@@ -159,10 +145,15 @@ export function CustomerBookDetailPage() {
           <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
             <div className="w-[500px] h-[500px] rounded-full border-[60px] border-white" />
           </div>
-          <BookOpen size={64} className="text-white/90" strokeWidth={1.2} />
-          <h1 className="text-white text-xl font-bold text-center px-8 leading-snug drop-shadow-sm line-clamp-2">
+          <BookOpen size={52} className="text-white/90 shrink-0" strokeWidth={1.2} />
+          <h1 className="text-white text-xl font-bold text-center leading-snug drop-shadow-sm line-clamp-2 w-full">
             {book.title}
           </h1>
+          {book.description && (
+            <p className="text-white/75 text-sm text-center line-clamp-3 leading-relaxed w-full">
+              {book.description}
+            </p>
+          )}
         </div>
 
         {/* Post header */}
@@ -181,22 +172,7 @@ export function CustomerBookDetailPage() {
 
         {/* Action bar */}
         <div className="flex items-center gap-1 px-4 py-3 border-b border-gray-100 dark:border-zinc-800">
-          {/* Love */}
-          <button
-            onClick={handleLike}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors group"
-          >
-            <Heart
-              size={20}
-              className={liked
-                ? 'text-rose-500 fill-rose-500'
-                : 'text-gray-400 dark:text-zinc-500 group-hover:text-rose-400 transition-colors'
-              }
-            />
-            <span className={`text-sm font-medium tabular-nums ${liked ? 'text-rose-500' : 'text-gray-500 dark:text-zinc-400'}`}>
-              {likeCount}
-            </span>
-          </button>
+
 
           {/* Share */}
           <button
@@ -227,6 +203,13 @@ export function CustomerBookDetailPage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 mb-1">Title</p>
             <p className="text-xl font-bold text-gray-900 dark:text-zinc-100 leading-snug">{book.title}</p>
           </div>
+
+          {book.description && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 mb-1">Description</p>
+              <p className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">{book.description}</p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="flex items-start gap-3">

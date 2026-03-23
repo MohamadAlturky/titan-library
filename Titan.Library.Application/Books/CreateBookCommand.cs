@@ -11,6 +11,7 @@ public class CreateBookCommand : ICommand<BookDto>
 {
     public string Isbn { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public int AuthorId { get; set; }
@@ -28,6 +29,14 @@ public class CreateBookCommandValidator : ICommandValidator<CreateBookCommand, B
         if (string.IsNullOrWhiteSpace(command.Title))
         {
             return Result.Fail(ApplicationMessageKeys.BOOK_TITLE_SHOULD_NOT_BE_EMPTY);
+        }
+        if (string.IsNullOrWhiteSpace(command.Description))
+        {
+            return Result.Fail(ApplicationMessageKeys.BOOK_DESCRIPTION_SHOULD_NOT_BE_EMPTY);
+        }
+        if (command.Description.Length < 50)
+        {
+            return Result.Fail(ApplicationMessageKeys.BOOK_DESCRIPTION_SHOULD_NOT_BE_EMPTY);
         }
 
         if (command.AuthorId <= 0)
@@ -61,6 +70,7 @@ public class CreateBookCommandHandler : BaseCommandHandler<CreateBookCommand, Bo
             Isbn = request.Isbn,
             Title = request.Title,
             AuthorId = request.AuthorId,
+            Description = request.Description,
             CreatedAt = DateTime.Now,
             IsAvailable = true,
         };

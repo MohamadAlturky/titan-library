@@ -10,6 +10,7 @@ public class UpdateBookCommand : ICommand<BookDto>
     public int Id { get; set; }
     public string Isbn { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public int AuthorId { get; set; }
 }
 
@@ -25,6 +26,15 @@ public class UpdateBookCommandValidator : ICommandValidator<UpdateBookCommand, B
 
         if (string.IsNullOrWhiteSpace(command.Title))
             return Result.Fail(ApplicationMessageKeys.BOOK_TITLE_SHOULD_NOT_BE_EMPTY);
+
+        if (string.IsNullOrWhiteSpace(command.Description))
+        {
+            return Result.Fail(ApplicationMessageKeys.BOOK_DESCRIPTION_SHOULD_NOT_BE_EMPTY);
+        }
+        if (command.Description.Length < 50)
+        {
+            return Result.Fail(ApplicationMessageKeys.BOOK_DESCRIPTION_SHOULD_NOT_BE_EMPTY);
+        }
 
         if (command.AuthorId <= 0)
             return Result.Fail(ApplicationMessageKeys.INVALIDE_AUTHOR_ID);
@@ -45,7 +55,10 @@ public class UpdateBookCommandHandler : BaseCommandHandler<UpdateBookCommand, Bo
         _bookRepository = bookRepository;
     }
 
-    protected override async Task<Result<BookDto>> InnerHandle(UpdateBookCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<BookDto>> InnerHandle(
+        UpdateBookCommand request,
+        CancellationToken cancellationToken
+    )
     {
         var book = await _bookRepository.FindById(request.Id);
         if (book is null)
@@ -53,6 +66,7 @@ public class UpdateBookCommandHandler : BaseCommandHandler<UpdateBookCommand, Bo
 
         book.Isbn = request.Isbn;
         book.Title = request.Title;
+        book.Description = request.Description;
         book.AuthorId = request.AuthorId;
 
         await _bookRepository.Update(book);

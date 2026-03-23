@@ -25,8 +25,8 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title}, {C.IsAvailable}, {C.IsDeleted})
-            VALUES (@Isbn, @AuthorId, @Title, @IsAvailable, FALSE)
+            INSERT INTO {T.Table} ({C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.IsAvailable}, {C.IsDeleted})
+            VALUES (@Isbn, @AuthorId, @Title, @Description, @IsAvailable, FALSE)
             RETURNING {C.Id};
             """;
 
@@ -36,6 +36,7 @@ public class BookRepository : IBookRepository
                 entity.Isbn,
                 entity.AuthorId,
                 entity.Title,
+                entity.Description,
                 entity.IsAvailable,
             }
         );
@@ -49,7 +50,7 @@ public class BookRepository : IBookRepository
 
         command.CommandText = $"""
             UPDATE {T.Table}
-            SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title, {C.IsAvailable} = @IsAvailable
+            SET {C.Isbn} = @Isbn, {C.AuthorId} = @AuthorId, {C.Title} = @Title, {C.Description} = @Description, {C.IsAvailable} = @IsAvailable
             WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;
             """;
 
@@ -60,6 +61,7 @@ public class BookRepository : IBookRepository
                 entity.Isbn,
                 entity.AuthorId,
                 entity.Title,
+                entity.Description,
                 entity.IsAvailable,
             }
         );
@@ -83,7 +85,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.IsDeleted} = FALSE;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.IsDeleted} = FALSE;";
 
         return await command.ExecuteListAsync(MapToBook);
     }
@@ -93,7 +95,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Id = id });
 
@@ -105,7 +107,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Isbn} = @Isbn AND {C.IsDeleted} = FALSE;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Isbn} = @Isbn AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Isbn = isbn });
 
@@ -117,7 +119,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Title} ILIKE @Title AND {C.IsDeleted} = FALSE;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.Title} ILIKE @Title AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { Title = $"%{title}%" });
 
@@ -129,7 +131,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText =
-            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId AND {C.IsDeleted} = FALSE;";
+            $"SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted} FROM {T.Table} WHERE {C.AuthorId} = @AuthorId AND {C.IsDeleted} = FALSE;";
 
         command.AddParameters(new { AuthorId = authorId });
 
@@ -161,7 +163,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted}
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted}
             FROM {T.Table}
             WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE
             FOR UPDATE;
@@ -177,7 +179,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
                    xmin::text::bigint AS row_version
             FROM {T.Table}
             WHERE {C.Id} = @Id AND {C.IsDeleted} = FALSE;
@@ -229,7 +231,7 @@ public class BookRepository : IBookRepository
         var offset = (page - 1) * pageSize;
 
         command.CommandText = $"""
-            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
+            SELECT {C.Id}, {C.Isbn}, {C.AuthorId}, {C.Title}, {C.Description}, {C.CreatedAt}, {C.IsAvailable}, {C.IsDeleted},
                     COUNT(*) OVER() AS total_count
             FROM {T.Table}
             WHERE {C.AuthorId} = @AuthorId
@@ -283,7 +285,7 @@ public class BookRepository : IBookRepository
         var fetchSize = pageSize + 1;
 
         command.CommandText = $"""
-            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
+            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.Description}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
                    u.name AS author_name, u.email AS author_email
             FROM {T.Table} b
             INNER JOIN {UC.Table} u ON b.{C.AuthorId} = u.id
@@ -325,7 +327,7 @@ public class BookRepository : IBookRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         command.CommandText = $"""
-            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
+            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.Description}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
                    u.name AS author_name, u.email AS author_email
             FROM {T.Table} b
             INNER JOIN {UC.Table} u ON b.{C.AuthorId} = u.id
@@ -345,6 +347,7 @@ public class BookRepository : IBookRepository
             Isbn = reader.GetString(reader.GetOrdinal(C.Isbn)),
             AuthorId = reader.GetInt32(reader.GetOrdinal(C.AuthorId)),
             Title = reader.GetString(reader.GetOrdinal(C.Title)),
+            Description = reader.GetString(reader.GetOrdinal(C.Description)),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsAvailable = reader.GetBoolean(reader.GetOrdinal(C.IsAvailable)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
@@ -363,6 +366,7 @@ public class BookRepository : IBookRepository
             Isbn = reader.GetString(reader.GetOrdinal(C.Isbn)),
             AuthorId = reader.GetInt32(reader.GetOrdinal(C.AuthorId)),
             Title = reader.GetString(reader.GetOrdinal(C.Title)),
+            Description = reader.GetString(reader.GetOrdinal(C.Description)),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsAvailable = reader.GetBoolean(reader.GetOrdinal(C.IsAvailable)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),

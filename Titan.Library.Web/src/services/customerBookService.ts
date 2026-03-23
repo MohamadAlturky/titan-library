@@ -4,6 +4,7 @@ export interface CustomerBookDto {
   id: number;
   title: string;
   isbn: string;
+  description: string;
   authorId: number;
   authorName: string;
   authorEmail: string;

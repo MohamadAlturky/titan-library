@@ -29,7 +29,7 @@ import { Modal } from '@/components/ui/Modal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type BookFormData = { title: string; isbn: string };
+type BookFormData = { title: string; isbn: string; description: string };
 type AvailabilityFilter = 'all' | 'true' | 'false';
 
 interface DraftFilters {
@@ -42,7 +42,7 @@ interface AppliedFilters {
   isAvailable?: boolean;
 }
 
-const emptyForm: BookFormData = { title: '', isbn: '' };
+const emptyForm: BookFormData = { title: '', isbn: '', description: '' };
 const emptyDraft: DraftFilters = { search: '', isAvailable: 'all' };
 const PAGE_SIZE = 10;
 
@@ -219,7 +219,7 @@ export function AuthorMyBooksPage() {
 
   const openEdit = (book: AuthorBookDto) => {
     setEditTarget(book);
-    setForm({ title: book.title, isbn: book.isbn });
+    setForm({ title: book.title, isbn: book.isbn, description: book.description });
     setFormOpen(true);
   };
 
@@ -231,15 +231,15 @@ export function AuthorMyBooksPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.isbn.trim()) return;
+    if (!form.title.trim() || !form.isbn.trim() || form.description.trim().length < 50) return;
     setSubmitting(true);
     try {
       if (editTarget) {
-        const payload: UpdateBookRequest = { title: form.title, isbn: form.isbn };
+        const payload: UpdateBookRequest = { title: form.title, isbn: form.isbn, description: form.description };
         await authorBookService.updateBook(editTarget.id, payload);
         toast.success('Book updated successfully.');
       } else {
-        const payload: CreateBookRequest = { title: form.title, isbn: form.isbn };
+        const payload: CreateBookRequest = { title: form.title, isbn: form.isbn, description: form.description };
         await authorBookService.createBook(payload);
         toast.success('Book created successfully.');
       }
@@ -686,6 +686,22 @@ export function AuthorMyBooksPage() {
               required
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="978-x-xxx-xxxxx-x"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description
+              <span className="ml-1 text-xs text-gray-400 dark:text-gray-500 font-normal">
+                ({form.description.trim().length}/50 min)
+              </span>
+            </label>
+            <textarea
+              value={form.description}
+              onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+              required
+              rows={4}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              placeholder="Write a description for this book (at least 50 characters)..."
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">

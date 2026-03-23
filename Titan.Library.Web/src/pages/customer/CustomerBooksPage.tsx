@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BookOpen, Search, X,
-  Heart, Share2, Info,
+  BookOpen, Search, X, Share2, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -46,12 +45,6 @@ function coverGradient(id: number) {
   return COVER_GRADIENTS[id % COVER_GRADIENTS.length];
 }
 
-// Seeded fake like count so it looks consistent between renders
-function seedLikes(id: number) {
-  return ((id * 31 + 17) % 120) + 4;
-}
-
-
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
@@ -91,13 +84,6 @@ interface BookCardProps {
 }
 
 function BookCard({ book, onDetails }: BookCardProps) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(seedLikes(book.id));
-
-  const handleLike = () => {
-    setLiked(v => !v);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-  };
 
   const handleShare = async () => {
     const url = `${window.location.origin}/customer/books/${book.id}`;
@@ -130,24 +116,29 @@ function BookCard({ book, onDetails }: BookCardProps) {
       </div>
 
       {/* ── Cover "photo" ── */}
-      <div className={`mx-4 rounded-xl h-52 bg-gradient-to-br ${coverGradient(book.id)} flex flex-col items-center justify-center gap-3 relative overflow-hidden`}>
+      <div className={`mx-4 rounded-xl h-52 bg-gradient-to-br ${coverGradient(book.id)} flex flex-col items-center justify-center gap-2 relative overflow-hidden px-5`}>
         {/* Decorative rings */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
+        {/* <div className="absolute inset-0 flex items-center justify-center opacity-10">
           <div className="w-64 h-64 rounded-full border-[32px] border-white" />
         </div>
         <div className="absolute inset-0 flex items-center justify-center opacity-5">
           <div className="w-96 h-96 rounded-full border-[48px] border-white" />
-        </div>
-        <BookOpen size={44} className="text-white/90" strokeWidth={1.5} />
-        <p className="text-white/90 text-sm font-semibold text-center px-6 line-clamp-2 leading-snug drop-shadow">
+        </div> */}
+        <BookOpen size={36} className="text-white/90 shrink-0" strokeWidth={1.5} />
+        <p className="text-white/90 text-sm font-semibold text-center line-clamp-1 leading-snug drop-shadow w-full">
           {book.title}
         </p>
+        {book.description && (
+          <p className="text-white/70 text-xs text-center line-clamp-3 leading-relaxed w-full">
+            {book.description}
+          </p>
+        )}
       </div>
 
       {/* ── Action bar ── */}
       <div className="flex items-center gap-1 px-3 pt-3 pb-1">
         {/* Love */}
-        <button
+        {/* <button
           onClick={handleLike}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors group"
           aria-label={liked ? 'Unlike' : 'Like'}
@@ -162,7 +153,7 @@ function BookCard({ book, onDetails }: BookCardProps) {
           <span className={`text-sm font-medium tabular-nums ${liked ? 'text-rose-500' : 'text-gray-500 dark:text-zinc-400'}`}>
             {likeCount}
           </span>
-        </button>
+        </button> */}
 
         {/* Share */}
         <button
@@ -187,9 +178,6 @@ function BookCard({ book, onDetails }: BookCardProps) {
 
       {/* ── Caption ── */}
       <div className="px-4 pb-4 pt-1">
-        <p className="text-sm text-gray-900 dark:text-zinc-100 font-semibold leading-snug line-clamp-1">
-          {book.title}
-        </p>
         <p className="text-xs text-gray-400 dark:text-zinc-500 font-mono mt-0.5">
           {book.isbn}
         </p>
@@ -310,11 +298,10 @@ export function CustomerBooksPage() {
                   <button
                     key={opt.value}
                     onClick={() => setDraft(prev => ({ ...prev, isAvailable: opt.value }))}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
+                      ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
                   >
                     {opt.label}
                   </button>
@@ -358,12 +345,12 @@ export function CustomerBooksPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
           {isLoading
             ? Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)
             : books.map(book => (
-                <BookCard key={book.id} book={book} onDetails={id => navigate(`/customer/books/${id}`)} />
-              ))
+              <BookCard key={book.id} book={book} onDetails={id => navigate(`/customer/books/${id}`)} />
+            ))
           }
         </div>
 
