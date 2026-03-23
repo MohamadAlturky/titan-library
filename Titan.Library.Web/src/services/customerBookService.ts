@@ -25,10 +25,37 @@ export interface GetCustomerBooksParams {
   pageSize?: number;
 }
 
+export interface BorrowDto {
+  id: number;
+  bookId: number;
+  customerId: number;
+  borrowedAt: string;
+  returnedAt: string | null;
+}
+
+export interface CustomerBorrowDto {
+  id: number;
+  bookId: number;
+  bookTitle: string;
+  authorName: string;
+  isReturned: boolean;
+  returnedAt: string | null;
+  createdAt: string;
+}
+
 export const customerBookService = {
   getBooks: (params?: GetCustomerBooksParams) =>
     apiClient.get<CursorPaginatedResult<CustomerBookDto>>('/CustomerBooks', { params }),
 
   getBookById: (id: number) =>
     apiClient.get<CustomerBookDto>(`/CustomerBooks/${id}`),
+
+  borrowBook: (bookId: number) =>
+    apiClient.post<BorrowDto>(`/Borrows/borrow/${bookId}`),
+
+  getBorrowsByCustomer: () =>
+    apiClient.get<CustomerBorrowDto[]>(`/Borrows/Mine`),
+
+  returnBook: (bookId: number) =>
+    apiClient.post<BorrowDto>(`/Borrows/return/${bookId}`),
 };

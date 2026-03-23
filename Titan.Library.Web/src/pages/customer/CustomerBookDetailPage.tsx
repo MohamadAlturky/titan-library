@@ -78,6 +78,7 @@ export function CustomerBookDetailPage() {
   const [book, setBook] = useState<CustomerBookDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [isBorrowing, setIsBorrowing] = useState(false);
   useEffect(() => {
     if (!id) return;
     customerBookService.getBookById(Number(id))
@@ -87,6 +88,21 @@ export function CustomerBookDetailPage() {
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));
   }, [id]);
+
+  const handleBorrow = async () => {
+    if (!book) return;
+    setIsBorrowing(true);
+    try {
+      await customerBookService.borrowBook(book.id);
+      toast.success('Book borrowed successfully!');
+      setBook({ ...book, isAvailable: false });
+    } catch (err: any) {
+      const message = err?.response?.data?.detail ?? 'Failed to borrow the book.';
+      toast.error(message);
+    } finally {
+      setIsBorrowing(false);
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -186,13 +202,13 @@ export function CustomerBookDetailPage() {
           {/* Borrow CTA */}
           <div className="ml-auto">
             <Button
-              onClick={() => navigate('/customer/borrow')}
-              disabled={!book.isAvailable}
+              onClick={handleBorrow}
+              disabled={!book.isAvailable || isBorrowing}
               className="rounded-full px-5"
               size="sm"
             >
               <BookCopy size={15} />
-              {book.isAvailable ? 'Borrow this book' : 'Not available'}
+              {isBorrowing ? 'Borrowing…' : book.isAvailable ? 'Borrow this book' : 'Not available'}
             </Button>
           </div>
         </div>

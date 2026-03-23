@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  Library, BookOpen, BookMarked, BookCopy, RotateCcw,
+  Library, BookOpen, BookMarked,
   Sun, Moon, LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,8 +10,6 @@ import { cn } from '@/lib/utils';
 const navLinks = [
   { to: '/customer/books',      label: 'Browse',     icon: BookOpen   },
   { to: '/customer/my-borrows', label: 'My Library', icon: BookMarked },
-  { to: '/customer/borrow',     label: 'Borrow',     icon: BookCopy   },
-  { to: '/customer/return',     label: 'Return',     icon: RotateCcw  },
 ];
 
 export function CustomerLayout() {

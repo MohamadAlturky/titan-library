@@ -19,6 +19,7 @@ public class Borrow : BaseEntity<int>
         if (IsReturned)
             throw new InvalidOperationException("Borrow already returned.");
         ReturnedAt = DateTime.UtcNow;
+        IsReturned = true;
     }
 
     public BorrowSnapshot TakeSnapshot() =>
@@ -29,6 +30,7 @@ public class Borrow : BaseEntity<int>
             BookId = BookId,
             ReturnedAt = ReturnedAt,
             CreatedAt = CreatedAt,
+            IsReturned = IsReturned,
         };
 
     public static Borrow Reconstitute(BorrowSnapshot snapshot) =>
@@ -48,5 +50,6 @@ public class Borrow : BaseEntity<int>
             CustomerId = customerId,
             BookId = bookId,
             CreatedAt = DateTime.UtcNow,
+            IsReturned = false,
         };
 }

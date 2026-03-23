@@ -143,7 +143,7 @@ public class CustomerRepository : ICustomerRepository
             CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
             IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
             IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
-            UserType = Enum.Parse<UserType>(reader.GetString(reader.GetOrdinal(C.UserType)), true),
+            UserType = (UserType)reader.GetInt32(reader.GetOrdinal(C.UserType)),
         };
         return Customer.Reconstitute(snapshot);
     }
