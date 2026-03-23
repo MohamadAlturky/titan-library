@@ -102,6 +102,8 @@ public class MessageRepository : IMessageRepository
 
     public async Task<(List<Message> items, int total)> GetPaginated(
         string? search,
+        string orderBy,
+        bool ascending,
         int page,
         int pageSize
     )
@@ -110,12 +112,15 @@ public class MessageRepository : IMessageRepository
 
         var offset = (page - 1) * pageSize;
         var searchParam = search is not null ? $"%{search}%" : null;
+        var allowedSortColumns = new HashSet<string> { "id", "key", "value", "created_at" };
+        var sortColumn = allowedSortColumns.Contains(orderBy) ? orderBy : "id";
+        var direction = ascending ? "ASC" : "DESC";
 
         command.CommandText = $"""
             SELECT {C.Id}, {C.Key}, {C.Value}, {C.CreatedAt}, COUNT(*) OVER() AS total_count
             FROM {T.Table}
             WHERE (@Search IS NULL OR {C.Key} ILIKE @Search OR {C.Value} ILIKE @Search)
-            ORDER BY {C.Id}
+            ORDER BY {sortColumn} {direction}
             LIMIT @PageSize OFFSET @Offset;
             """;
 

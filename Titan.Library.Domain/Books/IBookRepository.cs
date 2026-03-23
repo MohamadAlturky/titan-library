@@ -18,6 +18,16 @@ public interface IBookRepository : IBaseRepository<Book, int>
         int pageSize
     );
 
+    Task<(List<BookWithAuthor> items, int total)> GetAdminBooksPaginated(
+        string? authorName,
+        string? search,
+        bool? isAvailable,
+        string sortColumn,
+        bool ascending,
+        int page,
+        int pageSize
+    );
+
     Task<(List<BookWithAuthor> items, bool hasMore, int? nextCursor)> GetCustomerBooksCursor(
         string? search,
         bool? isAvailable,

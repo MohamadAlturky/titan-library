@@ -10,6 +10,7 @@ import { AdminBooksPage } from '@/pages/admin/AdminBooksPage';
 import { AdminBorrowsPage } from '@/pages/admin/AdminBorrowsPage';
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 import { AdminAuthorsPage } from '@/pages/admin/AdminAuthorsPage';
+import { AdminMessagesPage } from '@/pages/admin/AdminMessagesPage';
 import { CustomerBooksPage } from '@/pages/customer/CustomerBooksPage';
 import { CustomerBookDetailPage } from '@/pages/customer/CustomerBookDetailPage';
 import { CustomerMyBorrowsPage } from '@/pages/customer/CustomerMyBorrowsPage';
@@ -18,6 +19,7 @@ import { SendFeedbackPage } from '@/pages/customer/SendFeedbackPage';
 import { AuthorMyBooksPage } from '@/pages/author/AuthorMyBooksPage';
 import { AuthorMyBorrowedPage } from '@/pages/author/AuthorMyBorrowedPage';
 import { useAuth } from '@/hooks/useAuth';
+import { AdminBookBorrowsPage } from '@/pages/admin/AdminBookBorrowsPage';
 
 function RootRedirect() {
   const { user } = useAuth();
@@ -40,9 +42,11 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/admin/books" replace /> },
           { path: 'books', element: <AdminBooksPage /> },
+          { path: 'books/:bookId/borrows', element: <AdminBookBorrowsPage /> },
           { path: 'borrows', element: <AdminBorrowsPage /> },
           { path: 'users', element: <AdminUsersPage /> },
           { path: 'authors', element: <AdminAuthorsPage /> },
+          { path: 'messages', element: <AdminMessagesPage /> },
         ],
       },
     ],

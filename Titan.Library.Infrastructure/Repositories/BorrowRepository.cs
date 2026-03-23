@@ -183,6 +183,67 @@ public class BorrowRepository : IBorrowRepository
         return results;
     }
 
+    public async Task<IEnumerable<(Borrow Borrow, string CustomerName)>> FindByBookIdWithDetails(int bookId)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            SELECT br.{C.Id}, br.{C.CustomerId}, br.{C.BookId}, br.{C.IsReturned}, br.{C.ReturnedAt}, br.{C.CreatedAt},
+                   cu.{UC.Name} AS customer_name
+            FROM {T.Table} br
+            INNER JOIN {UT.Table} cu ON br.{C.CustomerId} = cu.{UC.Id}
+            WHERE br.{C.BookId} = @BookId
+            ORDER BY br.{C.CreatedAt} DESC;
+            """;
+
+        command.AddParameters(new { BookId = bookId });
+
+        var results = new List<(Borrow, string)>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            results.Add((MapToBorrow(reader), reader.GetString(reader.GetOrdinal("customer_name"))));
+        }
+        return results;
+    }
+
+    public async Task<(List<(Borrow Borrow, string CustomerName)> items, int total)> FindByBookIdWithDetailsPaginated(
+        int bookId,
+        string sortColumn,
+        bool ascending,
+        int page,
+        int pageSize
+    )
+    {
+        var direction = ascending ? "ASC" : "DESC";
+        var offset = (page - 1) * pageSize;
+
+        await using var countCommand = await _dbContext.CreateCommandAsync();
+        countCommand.CommandText = $"SELECT COUNT(*) FROM {T.Table} WHERE {C.BookId} = @BookId;";
+        countCommand.AddParameters(new { BookId = bookId });
+        var total = await countCommand.ExecuteScalarValueAsync<int>();
+
+        await using var command = await _dbContext.CreateCommandAsync();
+        command.CommandText = $"""
+            SELECT br.{C.Id}, br.{C.CustomerId}, br.{C.BookId}, br.{C.IsReturned}, br.{C.ReturnedAt}, br.{C.CreatedAt},
+                   cu.{UC.Name} AS customer_name
+            FROM {T.Table} br
+            INNER JOIN {UT.Table} cu ON br.{C.CustomerId} = cu.{UC.Id}
+            WHERE br.{C.BookId} = @BookId
+            ORDER BY {sortColumn} {direction}
+            LIMIT @PageSize OFFSET @Offset;
+            """;
+        command.AddParameters(new { BookId = bookId, PageSize = pageSize, Offset = offset });
+
+        var results = new List<(Borrow, string)>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            results.Add((MapToBorrow(reader), reader.GetString(reader.GetOrdinal("customer_name"))));
+        }
+        return (results, total);
+    }
+
     public async Task<Borrow?> FindActiveBorrowByCustomerAndBook(int customerId, int bookId)
     {
         await using var command = await _dbContext.CreateCommandAsync();

@@ -1,4 +1,6 @@
 using System.Data.Common;
+using Npgsql;
+using NpgsqlTypes;
 using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.AdoExtensions;
 using Titan.Library.Infrastructure.Contexts;
@@ -129,6 +131,87 @@ public class AdminRepository : IAdminRepository
         command.AddParameters(new { Email = email });
 
         return await command.ExecuteSingleOrDefaultAsync(MapToAdmin);
+    }
+
+    public async Task<(List<User> items, int total)> GetUsersPaginated(
+        string? search,
+        int? userType,
+        string orderBy,
+        bool ascending,
+        int page,
+        int pageSize
+    )
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        var direction = ascending ? "ASC" : "DESC";
+        var allowedSortColumns = new HashSet<string> { "id", "name", "email", "created_at", "is_active" };
+        var sortColumn = allowedSortColumns.Contains(orderBy) ? orderBy : "id";
+        var searchParam = search is not null ? $"%{search}%" : null;
+        var offset = (page - 1) * pageSize;
+
+        command.CommandText = $"""
+            SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt},
+                   u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType},
+                   COUNT(*) OVER() AS total_count
+            FROM {T.Table} u
+            WHERE u.{C.IsDeleted} = FALSE
+                AND u.{C.UserType} IN (1, 3)
+                AND (@UserType::integer IS NULL OR u.{C.UserType} = @UserType)
+                AND (@Search IS NULL OR u.{C.Name} ILIKE @Search OR u.{C.Email} ILIKE @Search)
+            ORDER BY {sortColumn} {direction}
+            LIMIT @PageSize OFFSET @Offset;
+            """;
+
+        command.AddParameters(new { PageSize = pageSize, Offset = offset });
+        command.Parameters.Add(
+            new NpgsqlParameter("UserType", NpgsqlDbType.Integer)
+            {
+                Value = userType.HasValue ? (object)userType.Value : DBNull.Value,
+            }
+        );
+        command.Parameters.Add(
+            new NpgsqlParameter("Search", NpgsqlDbType.Text)
+            {
+                Value = searchParam ?? (object)DBNull.Value,
+            }
+        );
+
+        var items = new List<User>();
+        var total = 0;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (total == 0)
+                total = (int)reader.GetInt64(reader.GetOrdinal("total_count"));
+            items.Add(MapToUser(reader));
+        }
+
+        return (items, total);
+    }
+
+    private static User MapToUser(DbDataReader reader)
+    {
+        var snapshot = new UserSnapshot
+        {
+            Id = reader.GetInt32(reader.GetOrdinal(C.Id)),
+            Name = reader.GetString(reader.GetOrdinal(C.Name)),
+            Email = reader.GetString(reader.GetOrdinal(C.Email)),
+            PasswordHash = reader.GetString(reader.GetOrdinal(C.PasswordHash)),
+            PasswordSalt = reader.GetString(reader.GetOrdinal(C.PasswordSalt)),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
+            IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
+            IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
+            UserType = (UserType)reader.GetInt32(reader.GetOrdinal(C.UserType)),
+        };
+
+        return snapshot.UserType switch
+        {
+            UserType.Customer => Customer.Reconstitute(snapshot),
+            UserType.Author => Author.Reconstitute(snapshot),
+            _ => throw new InvalidOperationException($"Unexpected user type: {snapshot.UserType}"),
+        };
     }
 
     private static Admin MapToAdmin(DbDataReader reader)

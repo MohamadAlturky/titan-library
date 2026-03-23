@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,45 +10,111 @@ import {
 import {
   ChevronUp, ChevronDown, ChevronsUpDown,
   ChevronLeft, ChevronRight,
-  Search, X, Filter, BookOpen, History,
+  Search, X, Filter, MessageSquare, Pencil, MoreHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   adminService,
-  type AdminBookDto,
+  type AdminMessageDto,
+  type UpdateMessageRequest,
 } from '@/services/adminService';
-import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AvailabilityFilter = 'all' | 'true' | 'false';
-
 interface DraftFilters {
   search: string;
-  isAvailable: AvailabilityFilter;
-  authorName: string;
 }
 
 interface AppliedFilters {
   search?: string;
-  isAvailable?: boolean;
-  authorName?: string;
 }
 
-const emptyDraft: DraftFilters = { search: '', isAvailable: 'all', authorName: '' };
+type MessageFormData = { key: string; value: string };
+const emptyDraft: DraftFilters = { search: '' };
+const emptyForm: MessageFormData = { key: '', value: '' };
 const PAGE_SIZE = 10;
 
-const col = createColumnHelper<AdminBookDto>();
+const col = createColumnHelper<AdminMessageDto>();
+
+// ─── Row action menu ──────────────────────────────────────────────────────────
+
+interface RowMenuProps {
+  message: AdminMessageDto;
+  onEdit: (message: AdminMessageDto) => void;
+}
+
+function RowMenu({ message, onEdit }: RowMenuProps) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: rect.right - 144 });
+    }
+    setOpen(v => !v);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        !btnRef.current?.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    const closeOnScroll = () => setOpen(false);
+    document.addEventListener('mousedown', close);
+    document.addEventListener('scroll', closeOnScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={toggle}
+        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+        aria-label="Row actions"
+      >
+        <MoreHorizontal size={16} />
+      </button>
+
+      {open && (
+        <div
+          ref={menuRef}
+          style={{ top: pos.top, left: pos.left }}
+          className="fixed z-50 w-36 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg py-1"
+        >
+          <button
+            onClick={() => { setOpen(false); onEdit(message); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
+          >
+            <Pencil size={14} />
+            Edit
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export function AdminBooksPage() {
-  const navigate = useNavigate();
-
-  const [books, setBooks] = useState<AdminBookDto[]>([]);
+export function AdminMessagesPage() {
+  const [messages, setMessages] = useState<AdminMessageDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,26 +126,28 @@ export function AdminBooksPage() {
   const [page, setPage] = useState(1);
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const fetchBooks = useCallback(
+  const [editTarget, setEditTarget] = useState<AdminMessageDto | null>(null);
+  const [form, setForm] = useState<MessageFormData>(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchMessages = useCallback(
     async (filters: AppliedFilters, currentPage: number, sort: SortingState) => {
       setIsLoading(true);
       try {
         const sortField = sort[0];
-        const res = await adminService.getBooks({
+        const res = await adminService.getMessages({
           search: filters.search || undefined,
-          isAvailable: filters.isAvailable,
-          authorName: filters.authorName || undefined,
-          sortBy: sortField ? (sortField.id as 'id' | 'title' | 'isbn' | 'isAvailable') : undefined,
+          sortBy: sortField ? (sortField.id as 'id' | 'key' | 'value' | 'createdAt') : undefined,
           sortDirection: sortField ? (sortField.desc ? 'desc' : 'asc') : undefined,
           page: currentPage,
           pageSize: PAGE_SIZE,
         });
-        setBooks(res.data.items);
+        setMessages(res.data.items);
         setTotalCount(res.data.totalCount);
         setTotalPages(res.data.totalPages);
         setFiltersOpen(false);
       } catch {
-        toast.error('Failed to load books.');
+        toast.error('Failed to load messages.');
       } finally {
         setIsLoading(false);
       }
@@ -89,15 +156,11 @@ export function AdminBooksPage() {
   );
 
   useEffect(() => {
-    fetchBooks(applied, page, sorting);
-  }, [applied, page, sorting, fetchBooks]);
+    fetchMessages(applied, page, sorting);
+  }, [applied, page, sorting, fetchMessages]);
 
   const handleApply = () => {
-    setApplied({
-      search: draft.search.trim() || undefined,
-      isAvailable: draft.isAvailable === 'all' ? undefined : draft.isAvailable === 'true',
-      authorName: draft.authorName.trim() || undefined,
-    });
+    setApplied({ search: draft.search.trim() || undefined });
     setPage(1);
   };
 
@@ -113,22 +176,49 @@ export function AdminBooksPage() {
     setPage(1);
   };
 
+  const openEdit = (message: AdminMessageDto) => {
+    setEditTarget(message);
+    setForm({ key: message.key, value: message.value });
+  };
+
+  const closeEdit = () => {
+    if (submitting) return;
+    setEditTarget(null);
+    setForm(emptyForm);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTarget || !form.key.trim() || !form.value.trim()) return;
+    setSubmitting(true);
+    try {
+      const payload: UpdateMessageRequest = { key: form.key.trim(), value: form.value.trim() };
+      await adminService.updateMessage(editTarget.id, payload);
+      toast.success('Message updated successfully.');
+      setMessages(prev =>
+        prev.map(m => m.id === editTarget.id ? { ...m, key: payload.key, value: payload.value } : m),
+      );
+      closeEdit();
+    } catch {
+      toast.error('Failed to update message.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const columns = [
     col.accessor('id', { header: 'ID', size: 60 }),
-    col.accessor('title', { header: 'Title' }),
-    col.accessor('isbn', { header: 'ISBN' }),
-    col.accessor('authorName', { header: 'Author', enableSorting: false }),
-    col.accessor('isAvailable', {
-      header: 'Availability',
+    col.accessor('key', { header: 'Key' }),
+    col.accessor('value', {
+      header: 'Value',
       cell: ({ getValue }) => (
-        <Badge variant={getValue() ? 'available' : 'borrowed'}>
-          {getValue() ? 'Available' : 'Borrowed'}
-        </Badge>
+        <span className="block max-w-xs truncate" title={getValue()}>
+          {getValue()}
+        </span>
       ),
     }),
     col.accessor('createdAt', {
       header: 'Created',
-      enableSorting: false,
       cell: ({ getValue }) => new Date(getValue()).toLocaleDateString(),
     }),
     col.display({
@@ -137,19 +227,13 @@ export function AdminBooksPage() {
       enableSorting: false,
       header: () => null,
       cell: ({ row }) => (
-        <button
-          onClick={() => navigate(`/admin/books/${row.original.id}/borrows`, { state: { bookTitle: row.original.title } })}
-          className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20 transition-colors"
-          title="Borrow history"
-        >
-          <History size={16} />
-        </button>
+        <RowMenu message={row.original} onEdit={openEdit} />
       ),
     }),
   ];
 
   const table = useReactTable({
-    data: books,
+    data: messages,
     columns,
     state: { sorting },
     onSortingChange: handleSortChange,
@@ -178,7 +262,7 @@ export function AdminBooksPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Books" description="All books in the library" />
+      <PageHeader title="Messages" description="Manage localization message keys and values" />
 
       {/* ── Filters card ─────────────────────────────────────────────────────── */}
       <Card>
@@ -191,7 +275,7 @@ export function AdminBooksPage() {
             Filters
             {hasActiveFilters && (
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold">
-                {Object.values(applied).filter(v => v !== undefined).length}
+                1
               </span>
             )}
           </div>
@@ -213,50 +297,11 @@ export function AdminBooksPage() {
                   <input
                     type="text"
                     value={draft.search}
-                    onChange={e => setDraft(prev => ({ ...prev, search: e.target.value }))}
+                    onChange={e => setDraft({ search: e.target.value })}
                     onKeyDown={e => e.key === 'Enter' && handleApply()}
-                    placeholder="Title or ISBN..."
+                    placeholder="Key or value..."
                     className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
                   />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Author Name
-                </label>
-                <input
-                  type="text"
-                  value={draft.authorName}
-                  onChange={e => setDraft(prev => ({ ...prev, authorName: e.target.value }))}
-                  onKeyDown={e => e.key === 'Enter' && handleApply()}
-                  placeholder="Author name..."
-                  className="w-44 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Availability
-                </label>
-                <div className="inline-flex p-1 bg-gray-200/50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl">
-                  {([
-                    { value: 'all', label: 'All' },
-                    { value: 'true', label: 'Available' },
-                    { value: 'false', label: 'Borrowed' },
-                  ] as { value: AvailabilityFilter; label: string }[]).map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setDraft(prev => ({ ...prev, isAvailable: opt.value }))}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                        draft.isAvailable === opt.value
-                          ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
                 </div>
               </div>
 
@@ -288,7 +333,7 @@ export function AdminBooksPage() {
       <Card>
         <div className="p-4 space-y-4">
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            {isLoading ? 'Loading…' : `${totalCount} book${totalCount !== 1 ? 's' : ''} found`}
+            {isLoading ? 'Loading…' : `${totalCount} message${totalCount !== 1 ? 's' : ''} found`}
           </p>
 
           <div className="overflow-x-auto border border-gray-200 dark:border-zinc-700 rounded-lg">
@@ -340,8 +385,8 @@ export function AdminBooksPage() {
                   <tr>
                     <td colSpan={columns.length} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-3 text-gray-400 dark:text-zinc-500">
-                        <BookOpen size={40} strokeWidth={1.2} />
-                        <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">No books found</p>
+                        <MessageSquare size={40} strokeWidth={1.2} />
+                        <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">No messages found</p>
                         {hasActiveFilters && (
                           <Button variant="secondary" size="sm" onClick={handleCancel}>
                             Clear filters
@@ -405,6 +450,51 @@ export function AdminBooksPage() {
           )}
         </div>
       </Card>
+
+      {/* ── Edit modal ───────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={!!editTarget}
+        onClose={closeEdit}
+        title="Edit Message"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Key
+            </label>
+            <input
+              type="text"
+              value={form.key}
+              onChange={e => setForm(prev => ({ ...prev, key: e.target.value }))}
+              required
+              autoFocus
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="MESSAGE_KEY"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Value
+            </label>
+            <textarea
+              value={form.value}
+              onChange={e => setForm(prev => ({ ...prev, value: e.target.value }))}
+              required
+              rows={4}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              placeholder="Human readable message..."
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={closeEdit} disabled={submitting}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting || !form.key.trim() || !form.value.trim()}>
+              {submitting ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

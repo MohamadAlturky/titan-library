@@ -4,7 +4,7 @@ namespace Titan.Library.Domain.Messages;
 
 public interface IMessageRepository : IBaseRepository<Message, int>
 {
-    Task<(List<Message> items, int total)> GetPaginated(string? search, int page, int pageSize);
+    Task<(List<Message> items, int total)> GetPaginated(string? search, string orderBy, bool ascending, int page, int pageSize);
     Task<Message?> FindByKey(string key);
     Task<List<Message>> GetByKeys(IEnumerable<string> keys);
     Task<List<Message>> GetNotInKeys(IEnumerable<string> keys);

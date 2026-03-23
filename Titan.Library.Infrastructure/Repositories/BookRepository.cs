@@ -272,6 +272,67 @@ public class BookRepository : IBookRepository
         return (items, total);
     }
 
+    public async Task<(List<BookWithAuthor> items, int total)> GetAdminBooksPaginated(
+        string? authorName,
+        string? search,
+        bool? isAvailable,
+        string sortColumn,
+        bool ascending,
+        int page,
+        int pageSize
+    )
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        var direction = ascending ? "ASC" : "DESC";
+        var allowedSortColumns = new HashSet<string> { "id", "title", "isbn", "is_available" };
+        var orderBy = allowedSortColumns.Contains(sortColumn) ? $"b.{sortColumn}" : "b.id";
+        var searchParam = search is not null ? $"%{search}%" : null;
+        var authorNameParam = authorName is not null ? $"%{authorName}%" : null;
+        var offset = (page - 1) * pageSize;
+
+        command.CommandText = $"""
+            SELECT b.{C.Id}, b.{C.Isbn}, b.{C.AuthorId}, b.{C.Title}, b.{C.Description}, b.{C.CreatedAt}, b.{C.IsAvailable}, b.{C.IsDeleted},
+                   u.name AS author_name, u.email AS author_email,
+                   COUNT(*) OVER() AS total_count
+            FROM {T.Table} b
+            INNER JOIN {UC.Table} u ON b.{C.AuthorId} = u.id
+            WHERE b.{C.IsDeleted} = FALSE
+                AND (@AuthorName IS NULL OR u.name ILIKE @AuthorName)
+                AND (@IsAvailable::boolean IS NULL OR b.{C.IsAvailable} = @IsAvailable)
+                AND (@Search IS NULL OR b.{C.Title} ILIKE @Search OR b.{C.Isbn} ILIKE @Search)
+            ORDER BY {orderBy} {direction}
+            LIMIT @PageSize OFFSET @Offset;
+            """;
+
+        command.AddParameters(new { IsAvailable = isAvailable, PageSize = pageSize, Offset = offset });
+        command.Parameters.Add(
+            new NpgsqlParameter("AuthorName", NpgsqlDbType.Text)
+            {
+                Value = authorNameParam ?? (object)DBNull.Value,
+            }
+        );
+        command.Parameters.Add(
+            new NpgsqlParameter("Search", NpgsqlDbType.Text)
+            {
+                Value = searchParam ?? (object)DBNull.Value,
+            }
+        );
+
+        var items = new List<BookWithAuthor>();
+        var total = 0;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (total == 0)
+                total = reader.GetInt32(reader.GetOrdinal("total_count"));
+            items.Add(MapToBookWithAuthor(reader));
+        }
+
+        return (items, total);
+    }
+
     public async Task<(List<BookWithAuthor> items, bool hasMore, int? nextCursor)> GetCustomerBooksCursor(
         string? search,
         bool? isAvailable,

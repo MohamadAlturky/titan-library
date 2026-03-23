@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { BookOpen, Users, BookMarked, UserSquare, Library, BookCopy, RotateCcw } from 'lucide-react';
+import { BookOpen, Users, BookMarked, Library, BookCopy, RotateCcw, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const adminLinks = [
   { to: '/admin/books', label: 'Books', icon: BookOpen },
-  { to: '/admin/borrows', label: 'Borrows', icon: BookMarked },
+  // { to: '/admin/borrows', label: 'Borrows', icon: BookMarked },
   { to: '/admin/users', label: 'Users', icon: Users },
-  { to: '/admin/authors', label: 'Authors', icon: UserSquare },
+  // { to: '/admin/authors', label: 'Authors', icon: UserSquare },
+  { to: '/admin/messages', label: 'Messages', icon: MessageSquare },
 ];
 
 const customerLinks = [
