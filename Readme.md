@@ -17,7 +17,7 @@ For the users subdomain, inheritance is used to abstract shared user operations 
 
 ## Contracts Layer
 
-Contains abstractions that belong to the domain, such as DTOs and service interfaces.
+Contains the DTOs used to transfer data between layers.
 
 **Why this layer exists:**
 DTOs are surprisingly complex to manage in a large application. Different use cases often need to return slightly different shapes of data, and without a dedicated place for them, you end up either duplicating models or creating an uncontrolled mess. This layer provides a hierarchy for DTOs so you can reuse and extend them cleanly.
