@@ -145,15 +145,22 @@ public class AdminRepository : IAdminRepository
         await using var command = await _dbContext.CreateCommandAsync();
 
         var direction = ascending ? "ASC" : "DESC";
-        var allowedSortColumns = new HashSet<string> { "id", "name", "email", "created_at", "is_active" };
+        var allowedSortColumns = new HashSet<string>
+        {
+            "id",
+            "name",
+            "email",
+            "created_at",
+            "is_active",
+        };
         var sortColumn = allowedSortColumns.Contains(orderBy) ? orderBy : "id";
         var searchParam = search is not null ? $"%{search}%" : null;
         var offset = (page - 1) * pageSize;
 
         command.CommandText = $"""
             SELECT u.{C.Id}, u.{C.Name}, u.{C.Email}, u.{C.PasswordHash}, u.{C.PasswordSalt},
-                   u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType},
-                   COUNT(*) OVER() AS total_count
+                    u.{C.CreatedAt}, u.{C.IsDeleted}, u.{C.IsActive}, u.{C.UserType},
+                    COUNT(*) OVER() AS total_count
             FROM {T.Table} u
             WHERE u.{C.IsDeleted} = FALSE
                 AND u.{C.UserType} IN (1, 3)
