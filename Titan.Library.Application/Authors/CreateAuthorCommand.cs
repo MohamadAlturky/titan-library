@@ -41,21 +41,20 @@ public class CreateAuthorCommandHandler : BaseCommandHandler<CreateAuthorCommand
         _authorRepository = authorRepository;
     }
 
-    protected override async Task<Result<AuthorDto>> InnerHandle(CreateAuthorCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<AuthorDto>> InnerHandle(
+        CreateAuthorCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var author = new Author
-        {
-            Name = request.Name,
-            Email = request.Email,
-            CreatedAt = DateTime.UtcNow
-        };
-        author.SetPassword(request.Password);
-
+        var author = Author.Create(request.Name, request.Email, request.Password);
         var authorId = await _authorRepository.Add(author);
         author.Id = authorId;
 
         var authorDto = AuthorDto.FromEntity(author);
 
-        return Result<AuthorDto>.Success(authorDto, ApplicationMessageKeys.AUTHOR_CREATED_SUCCESSFULLY);
+        return Result<AuthorDto>.Success(
+            authorDto,
+            ApplicationMessageKeys.AUTHOR_CREATED_SUCCESSFULLY
+        );
     }
 }

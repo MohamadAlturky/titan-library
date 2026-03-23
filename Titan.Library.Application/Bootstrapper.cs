@@ -21,6 +21,7 @@ public static class ApplicationBootstrapper
         });
         services.AddTransient<ApplicationMessageKeysDataSeeder>();
         services.AddTransient<AdminUserSeeder>();
+        services.Configure<AdminSettings>(configuration);
 
         services.AddScoped<IMessageCacheKeyResolver, MessageCacheKeyResolver>();
         services.AddScoped<IMessageCacheValueResolver, MessageCacheValueResolver>();

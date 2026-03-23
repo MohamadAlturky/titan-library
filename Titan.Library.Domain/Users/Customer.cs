@@ -4,9 +4,19 @@ namespace Titan.Library.Domain.Users;
 
 public class Customer : User
 {
-    public Customer() => RestoreUserType(UserType.Customer);
+    // public Customer() => RestoreUserType(UserType.Customer);
+    private Customer()
+        : base()
+    {
+        RestoreUserType(UserType.Customer);
+    }
 
-    public List<Borrow> Borrows { get; set; } = [];
+    private readonly List<Borrow> _borrows = [];
+    public IReadOnlyCollection<Borrow> Borrows => _borrows.AsReadOnly();
+
+    public void AddBorrow(Borrow borrow) => _borrows.Add(borrow);
+
+    public void ClearBorrows() => _borrows.Clear();
 
     public UserSnapshot TakeSnapshot() =>
         new()
@@ -21,6 +31,18 @@ public class Customer : User
             IsActive = IsActive,
             UserType = UserType,
         };
+
+    public static Customer Create(string name, string email, string password)
+    {
+        var c = new Customer
+        {
+            Name = name,
+            Email = email,
+            CreatedAt = DateTime.UtcNow,
+        };
+        c.SetPassword(password);
+        return c;
+    }
 
     public static Customer Reconstitute(UserSnapshot snapshot)
     {

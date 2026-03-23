@@ -6,6 +6,8 @@ namespace Titan.Library.Domain.Books;
 
 public class Book : BaseEntity<int>
 {
+    private Book() { }
+
     public string Isbn { get; set; } = string.Empty;
     public int AuthorId { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -16,7 +18,13 @@ public class Book : BaseEntity<int>
     public void Delete() => IsDeleted = true;
 
     public Author Author { get; set; } = null!;
-    public List<Borrow> Borrows { get; set; } = [];
+
+    private readonly List<Borrow> _borrows = [];
+    public IReadOnlyCollection<Borrow> Borrows => _borrows.AsReadOnly();
+
+    public void AddBorrow(Borrow borrow) => _borrows.Add(borrow);
+
+    public void ClearBorrows() => _borrows.Clear();
 
     public BookSnapshot TakeSnapshot() =>
         new()
@@ -29,6 +37,18 @@ public class Book : BaseEntity<int>
             CreatedAt = CreatedAt,
             IsAvailable = IsAvailable,
             IsDeleted = IsDeleted,
+        };
+
+    public static Book Create(int authorId, string isbn, string title, string description) =>
+        new()
+        {
+            AuthorId = authorId,
+            Isbn = isbn,
+            Title = title,
+            Description = description,
+            IsAvailable = true,
+            CreatedAt = DateTime.UtcNow,
+            IsDeleted = false,
         };
 
     public static Book Reconstitute(BookSnapshot snapshot) =>

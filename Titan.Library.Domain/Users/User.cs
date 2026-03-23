@@ -5,6 +5,8 @@ namespace Titan.Library.Domain.Users;
 
 public class User : BaseEntity<int>, ISoftDeletable
 {
+    protected User() { }
+
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;

@@ -6,6 +6,8 @@ namespace Titan.Library.Domain.Borrows;
 
 public class Borrow : BaseEntity<int>
 {
+    private Borrow() { }
+
     public int CustomerId { get; set; }
     public int BookId { get; set; }
     public Book Book { get; set; } = null!;

@@ -71,13 +71,7 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
     {
         if (request.UserType.Equals(UserTypeValues.Customer, StringComparison.OrdinalIgnoreCase))
         {
-            var customer = new Customer
-            {
-                Name = request.Name,
-                Email = request.Email,
-                CreatedAt = DateTime.UtcNow,
-            };
-            customer.SetPassword(request.Password);
+            var customer = Customer.Create(request.Name, request.Email, request.Password);
 
             var customerId = await _customerRepository.Add(customer);
             customer.Id = customerId;
@@ -95,12 +89,7 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
         }
         else
         {
-            var author = new Author
-            {
-                Name = request.Name,
-                Email = request.Email,
-                CreatedAt = DateTime.UtcNow,
-            };
+            var author = Author.Create(request.Name, request.Email, request.Password);
             author.SetPassword(request.Password);
 
             var authorId = await _authorRepository.Add(author);

@@ -4,6 +4,8 @@ namespace Titan.Library.Domain.Feedbacks;
 
 public class Feedback : BaseEntity<int>
 {
+    public Feedback() { }
+
     public int CustomerId { get; set; }
     public string Category { get; set; } = string.Empty;
     public int? Rating { get; set; }
@@ -34,7 +36,13 @@ public class Feedback : BaseEntity<int>
             CreatedAt = snapshot.CreatedAt,
         };
 
-    public static Feedback Create(int customerId, string category, int? rating, string subject, string message) =>
+    public static Feedback Create(
+        int customerId,
+        string category,
+        int? rating,
+        string subject,
+        string message
+    ) =>
         new()
         {
             CustomerId = customerId,

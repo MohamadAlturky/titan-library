@@ -65,15 +65,7 @@ public class CreateBookCommandHandler : BaseCommandHandler<CreateBookCommand, Bo
         CancellationToken cancellationToken
     )
     {
-        var book = new Book
-        {
-            Isbn = request.Isbn,
-            Title = request.Title,
-            AuthorId = request.AuthorId,
-            Description = request.Description,
-            CreatedAt = DateTime.Now,
-            IsAvailable = true,
-        };
+        var book = Book.Create(request.AuthorId, request.Isbn, request.Title, request.Description);
         var bookId = await _bookRepository.Add(book);
         book.Id = bookId;
         var bookDto = BookDto.FromEntity(book);

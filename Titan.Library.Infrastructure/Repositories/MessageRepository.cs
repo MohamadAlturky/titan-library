@@ -125,7 +125,10 @@ public class MessageRepository : IMessageRepository
             """;
 
         command.Parameters.Add(
-            new NpgsqlParameter("Search", NpgsqlDbType.Text) { Value = searchParam ?? (object)DBNull.Value }
+            new NpgsqlParameter("Search", NpgsqlDbType.Text)
+            {
+                Value = searchParam ?? (object)DBNull.Value,
+            }
         );
         command.AddParameters(new { PageSize = pageSize, Offset = offset });
 
@@ -212,12 +215,12 @@ public class MessageRepository : IMessageRepository
         await command.ExecuteNonQuerySafeAsync();
     }
 
-    private static Message MapToMessage(DbDataReader reader) =>
-        new()
-        {
-            Id = reader.GetInt32(reader.GetOrdinal(C.Id)),
-            Key = reader.GetString(reader.GetOrdinal(C.Key)),
-            Value = reader.GetString(reader.GetOrdinal(C.Value)),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
-        };
+    private static Message MapToMessage(DbDataReader reader)
+    {
+        int id = reader.GetInt32(reader.GetOrdinal(C.Id));
+        string key = reader.GetString(reader.GetOrdinal(C.Key));
+        string value = reader.GetString(reader.GetOrdinal(C.Value));
+        DateTime createdAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt));
+        return Message.Map(id, key, value, createdAt);
+    }
 }

@@ -37,15 +37,12 @@ public class CreateMessageCommandHandler : BaseCommandHandler<CreateMessageComma
         _messageRepository = messageRepository;
     }
 
-    protected override async Task<Result<MessageDto>> InnerHandle(CreateMessageCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<MessageDto>> InnerHandle(
+        CreateMessageCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var message = new Message
-        {
-            Key = request.Key,
-            Value = request.Value,
-            CreatedAt = DateTime.UtcNow,
-        };
-
+        var message = Message.Create(request.Key, request.Value);
         var id = await _messageRepository.Add(message);
         message.Id = id;
 

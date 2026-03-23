@@ -32,12 +32,7 @@ public class ApplicationMessageKeysDataSeeder
 
         var newMessages = allKeys
             .Where(k => !existingKeys.Contains(k))
-            .Select(k => new Message
-            {
-                Key = k,
-                Value = k,
-                CreatedAt = DateTime.UtcNow,
-            })
+            .Select(k => Message.Create(k, k))
             .ToList();
 
         var obsoleteMessages = await _messageRepository.GetNotInKeys(allKeys);

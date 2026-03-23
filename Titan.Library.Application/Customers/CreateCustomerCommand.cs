@@ -41,21 +41,21 @@ public class CreateCustomerCommandHandler : BaseCommandHandler<CreateCustomerCom
         _customerRepository = customerRepository;
     }
 
-    protected override async Task<Result<CustomerDto>> InnerHandle(CreateCustomerCommand request, CancellationToken cancellationToken)
+    protected override async Task<Result<CustomerDto>> InnerHandle(
+        CreateCustomerCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var customer = new Customer
-        {
-            Name = request.Name,
-            Email = request.Email,
-            CreatedAt = DateTime.UtcNow
-        };
-        customer.SetPassword(request.Password);
+        var customer = Customer.Create(request.Name, request.Email, request.Password);
 
         var customerId = await _customerRepository.Add(customer);
         customer.Id = customerId;
 
         var customerDto = CustomerDto.FromEntity(customer);
 
-        return Result<CustomerDto>.Success(customerDto, ApplicationMessageKeys.CUSTOMER_CREATED_SUCCESSFULLY);
+        return Result<CustomerDto>.Success(
+            customerDto,
+            ApplicationMessageKeys.CUSTOMER_CREATED_SUCCESSFULLY
+        );
     }
 }
