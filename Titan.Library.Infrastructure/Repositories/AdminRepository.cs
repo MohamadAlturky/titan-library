@@ -23,8 +23,8 @@ public class AdminRepository : IAdminRepository
 
         command.CommandText = $"""
             WITH inserted AS (
-                INSERT INTO {T.Table} ({C.Name}, {C.Email}, {C.PasswordHash}, {C.PasswordSalt})
-                VALUES (@Name, @Email, @PasswordHash, @PasswordSalt)
+                INSERT INTO {T.Table} ({C.Name}, {C.Email}, {C.PasswordHash}, {C.PasswordSalt}, {C.UserType})
+                VALUES (@Name, @Email, @PasswordHash, @PasswordSalt, @UserType)
                 RETURNING id
             )
             INSERT INTO {ADT.Table} ({ADT.UserId}) SELECT id FROM inserted RETURNING {ADT.UserId};
@@ -37,6 +37,7 @@ public class AdminRepository : IAdminRepository
                 entity.Email,
                 entity.PasswordHash,
                 entity.PasswordSalt,
+                UserType = ((int)entity.UserType),
             }
         );
 
@@ -134,14 +135,14 @@ public class AdminRepository : IAdminRepository
     {
         var snapshot = new UserSnapshot
         {
-            Id           = reader.GetInt32(reader.GetOrdinal(C.Id)),
-            Name         = reader.GetString(reader.GetOrdinal(C.Name)),
-            Email        = reader.GetString(reader.GetOrdinal(C.Email)),
+            Id = reader.GetInt32(reader.GetOrdinal(C.Id)),
+            Name = reader.GetString(reader.GetOrdinal(C.Name)),
+            Email = reader.GetString(reader.GetOrdinal(C.Email)),
             PasswordHash = reader.GetString(reader.GetOrdinal(C.PasswordHash)),
             PasswordSalt = reader.GetString(reader.GetOrdinal(C.PasswordSalt)),
-            CreatedAt    = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
-            IsDeleted    = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
-            IsActive     = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal(C.CreatedAt)),
+            IsDeleted = reader.GetBoolean(reader.GetOrdinal(C.IsDeleted)),
+            IsActive = reader.GetBoolean(reader.GetOrdinal(C.IsActive)),
         };
         return Admin.Reconstitute(snapshot);
     }

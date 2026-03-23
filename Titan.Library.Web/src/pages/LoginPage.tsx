@@ -113,8 +113,8 @@ import { setTokenCookie } from '@/lib/api';
 import type { UserRole } from '@/types';
 
 function mapUserType(userType: string): UserRole {
-  if (userType === 'admin') return 'admin';
-  if (userType === 'author') return 'author';
+  if (userType.toLowerCase() === 'admin') return 'admin';
+  if (userType.toLowerCase() === 'author') return 'author';
   return 'customer';
 }
 
@@ -131,14 +131,15 @@ export function LoginPage() {
     try {
       const tokenRes = await userAuthenticationService.login({ email, password });
       const { token, userId, userType } = tokenRes.data;
+      console.log(tokenRes.data);
 
       setTokenCookie(token);
 
       const role = mapUserType(userType);
       login({ id: String(userId), name: email, email, role, token });
 
-      if (role === 'admin') navigate('/admin/books');
-      else if (role === 'author') navigate('/author/my-books');
+      if (role.toLowerCase() === 'admin') navigate('/admin/books');
+      else if (role.toLowerCase() === 'author') navigate('/author/my-books');
       else navigate('/customer/books');
     } catch (err: unknown) {
       const message =

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Titan.Library.Application.Borrows.Strategies;
 using Titan.Library.Application.Messages.Caching;
 using Titan.Library.Application.Messages.Services;
+using Titan.Library.Application.Services;
 
 namespace Titan.Library.Application;
 
@@ -19,6 +20,7 @@ public static class ApplicationBootstrapper
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
         services.AddTransient<ApplicationMessageKeysDataSeeder>();
+        services.AddTransient<AdminUserSeeder>();
 
         services.AddScoped<IMessageCacheKeyResolver, MessageCacheKeyResolver>();
         services.AddScoped<IMessageCacheValueResolver, MessageCacheValueResolver>();

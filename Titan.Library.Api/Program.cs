@@ -18,8 +18,8 @@ builder.Host.UseSerilog(
 );
 
 builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
+);
 builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddObservability(builder.Configuration);
@@ -79,6 +79,8 @@ app.MapGet(
     .WithName("GetWeatherForecast");
 await app.UseSqlMigrations();
 await app.UseMessageKeysSeeder();
+await app.UseAdminUserSeeder();
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
