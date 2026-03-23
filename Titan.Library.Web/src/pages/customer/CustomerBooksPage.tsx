@@ -327,7 +327,7 @@ export function CustomerBooksPage() {
         )}
 
         {/* Note: I adjusted the grid-cols slightly to account for the taller, more expressive cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {isLoading
             ? Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)
             : books.map(book => (

@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  Library, BookOpen, BookMarked,
+  Library, BookOpen, BookMarked, Info, MessageSquare,
   Sun, Moon, LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,8 +8,10 @@ import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { to: '/customer/books',      label: 'Browse',     icon: BookOpen   },
-  { to: '/customer/my-borrows', label: 'My Library', icon: BookMarked },
+  { to: '/customer/books',      label: 'Browse',        icon: BookOpen      },
+  { to: '/customer/my-borrows', label: 'My Library',    icon: BookMarked    },
+  { to: '/customer/about',      label: 'About Us',      icon: Info          },
+  { to: '/customer/feedback',   label: 'Send Feedback', icon: MessageSquare },
 ];
 
 export function CustomerLayout() {
@@ -46,10 +48,10 @@ export function CustomerLayout() {
                 key={to}
                 to={to}
                 className={({ isActive }) => cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all duration-150',
+                  'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
-                    : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-zinc-100'
+                    ? 'text-indigo-600 dark:text-indigo-400 underline underline-offset-4 decoration-2 decoration-indigo-600 dark:decoration-indigo-400'
+                    : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-100'
                 )}
               >
                 <Icon size={16} />

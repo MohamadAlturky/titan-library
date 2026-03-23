@@ -9,6 +9,7 @@ using Titan.Library.Common.Auth;
 using Titan.Library.Common.Storage;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
+using Titan.Library.Domain.Feedbacks;
 using Titan.Library.Common.Caching;
 using Titan.Library.Domain.Messages;
 using Titan.Library.Domain.Users;
@@ -62,6 +63,7 @@ public static class InfrastructureBootstrapper
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IBorrowRepository, BorrowRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IDbMigrator, SqlDbMigrator>();
         services.RegisterSqlMigrations();
 

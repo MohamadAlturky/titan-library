@@ -13,6 +13,8 @@ import { AdminAuthorsPage } from '@/pages/admin/AdminAuthorsPage';
 import { CustomerBooksPage } from '@/pages/customer/CustomerBooksPage';
 import { CustomerBookDetailPage } from '@/pages/customer/CustomerBookDetailPage';
 import { CustomerMyBorrowsPage } from '@/pages/customer/CustomerMyBorrowsPage';
+import { AboutUsPage } from '@/pages/customer/AboutUsPage';
+import { SendFeedbackPage } from '@/pages/customer/SendFeedbackPage';
 import { AuthorMyBooksPage } from '@/pages/author/AuthorMyBooksPage';
 import { AuthorMyBorrowedPage } from '@/pages/author/AuthorMyBorrowedPage';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,6 +58,8 @@ export const router = createBrowserRouter([
           { path: 'books', element: <CustomerBooksPage /> },
           { path: 'books/:id', element: <CustomerBookDetailPage /> },
           { path: 'my-borrows', element: <CustomerMyBorrowsPage /> },
+          { path: 'about',     element: <AboutUsPage /> },
+          { path: 'feedback',  element: <SendFeedbackPage /> },
         ],
       },
     ],
