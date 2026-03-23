@@ -9,11 +9,11 @@ using Titan.Library.Contracts.Borrows;
 
 namespace Titan.Library.Endpoints.Borrow;
 
-public class BorrowEndpoints : EndpointGroupBase
+public class CustomerBorrowEndpoints : EndpointGroupBase
 {
     public override void Map(WebApplication app)
     {
-        var group = app.MapGroup(this, "Borrows", "Borrows");
+        var group = app.MapGroup(this, "CustomerBorrows", "CustomerBorrows");
 
         group
             .MapPost("/borrow/{bookId}", BorrowBookAsync)

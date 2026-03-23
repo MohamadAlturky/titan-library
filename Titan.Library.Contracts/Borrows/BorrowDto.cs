@@ -12,6 +12,7 @@ public class BorrowDto
     public DateTime CreatedAt { get; set; }
     public string BookTitle { get; set; } = string.Empty;
     public string AuthorName { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
 
     public static BorrowDto FromEntity(Borrow entity) =>
         new()

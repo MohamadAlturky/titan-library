@@ -51,11 +51,11 @@ export const customerBookService = {
     apiClient.get<CustomerBookDto>(`/CustomerBooks/${id}`),
 
   borrowBook: (bookId: number) =>
-    apiClient.post<BorrowDto>(`/Borrows/borrow/${bookId}`),
+    apiClient.post<BorrowDto>(`/CustomerBorrows/borrow/${bookId}`),
 
   getBorrowsByCustomer: () =>
-    apiClient.get<CustomerBorrowDto[]>(`/Borrows/Mine`),
+    apiClient.get<CustomerBorrowDto[]>(`/CustomerBorrows/Mine`),
 
   returnBook: (bookId: number) =>
-    apiClient.post<BorrowDto>(`/Borrows/return/${bookId}`),
+    apiClient.post<BorrowDto>(`/CustomerBorrows/return/${bookId}`),
 };

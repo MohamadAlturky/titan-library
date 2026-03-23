@@ -39,6 +39,17 @@ export interface UpdateBookRequest {
   description: string;
 }
 
+export interface AuthorBorrowDto {
+  id: number;
+  bookId: number;
+  customerId: number;
+  bookTitle: string;
+  customerName: string;
+  isReturned: boolean;
+  returnedAt: string | null;
+  createdAt: string;
+}
+
 export const authorBookService = {
   getBooks: (params?: GetAuthorBooksParams) =>
     apiClient.get<PaginatedResult<AuthorBookDto>>('/AuthorBooks', { params }),
@@ -51,4 +62,7 @@ export const authorBookService = {
 
   deleteBook: (id: number) =>
     apiClient.delete<boolean>(`/AuthorBooks/${id}`),
+
+  getBorrowsByAuthor: () =>
+    apiClient.get<AuthorBorrowDto[]>('/AuthorBorrows/Mine'),
 };

@@ -149,6 +149,40 @@ public class BorrowRepository : IBorrowRepository
         return results;
     }
 
+    public async Task<
+        IEnumerable<(Borrow Borrow, string BookTitle, string CustomerName)>
+    > FindByAuthorIdWithDetails(int authorId)
+    {
+        await using var command = await _dbContext.CreateCommandAsync();
+
+        command.CommandText = $"""
+            SELECT br.{C.Id}, br.{C.CustomerId}, br.{C.BookId}, br.{C.IsReturned}, br.{C.ReturnedAt}, br.{C.CreatedAt},
+                   b.{BC.Title}  AS book_title,
+                   cu.{UC.Name}  AS customer_name
+            FROM {T.Table} br
+            INNER JOIN {BT.Table} b  ON br.{C.BookId}    = b.{BC.Id}
+            INNER JOIN {UT.Table} cu ON br.{C.CustomerId} = cu.{UC.Id}
+            WHERE b.{BC.AuthorId} = @AuthorId
+            ORDER BY br.{C.CreatedAt} DESC;
+            """;
+
+        command.AddParameters(new { AuthorId = authorId });
+
+        var results = new List<(Borrow, string, string)>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            results.Add(
+                (
+                    MapToBorrow(reader),
+                    reader.GetString(reader.GetOrdinal("book_title")),
+                    reader.GetString(reader.GetOrdinal("customer_name"))
+                )
+            );
+        }
+        return results;
+    }
+
     public async Task<Borrow?> FindActiveBorrowByCustomerAndBook(int customerId, int bookId)
     {
         await using var command = await _dbContext.CreateCommandAsync();
