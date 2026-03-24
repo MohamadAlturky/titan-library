@@ -147,7 +147,7 @@ export function AdminMessagesPage() {
         setTotalPages(res.data.totalPages);
         setFiltersOpen(false);
       } catch {
-        toast.error('Failed to load messages.');
+        // nothing to do
       } finally {
         setIsLoading(false);
       }
@@ -200,7 +200,7 @@ export function AdminMessagesPage() {
       );
       closeEdit();
     } catch {
-      toast.error('Failed to update message.');
+      // nothing to do
     } finally {
       setSubmitting(false);
     }

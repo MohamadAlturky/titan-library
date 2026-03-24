@@ -177,7 +177,7 @@ export function AuthorMyBooksPage() {
         setTotalPages(res.data.totalPages);
         setFiltersOpen(false);
       } catch {
-        toast.error('Failed to load books.');
+        // nothing to do
       } finally {
         setIsLoading(false);
       }
@@ -246,7 +246,7 @@ export function AuthorMyBooksPage() {
       closeForm();
       fetchBooks(applied, page, sorting);
     } catch {
-      toast.error(editTarget ? 'Failed to update book.' : 'Failed to create book.');
+        // nothing to do
     } finally {
       setSubmitting(false);
     }
@@ -266,7 +266,7 @@ export function AuthorMyBooksPage() {
       setTotalCount(prev => prev - 1);
       setDeleteTarget(null);
     } catch {
-      toast.error('Failed to delete book.');
+        // nothing to do
     } finally {
       setDeleting(false);
     }

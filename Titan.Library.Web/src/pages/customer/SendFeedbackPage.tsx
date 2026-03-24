@@ -25,10 +25,10 @@ const emptyForm: FeedbackForm = {
 
 const categories: { value: FeedbackCategory; label: string }[] = [
   { value: 'general', label: 'General' },
-  { value: 'bug',     label: 'Bug Report' },
+  { value: 'bug', label: 'Bug Report' },
   { value: 'feature', label: 'Feature Request' },
-  { value: 'book',    label: 'Book Suggestion' },
-  { value: 'other',   label: 'Other' },
+  { value: 'book', label: 'Book Suggestion' },
+  { value: 'other', label: 'Other' },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function SendFeedbackPage() {
       setSubmitted(true);
       toast.success('Feedback submitted! Thank you.');
     } catch {
-      toast.error('Failed to submit feedback. Please try again.');
+      // nothing to do
     } finally {
       setIsSubmitting(false);
     }
@@ -113,11 +113,10 @@ export function SendFeedbackPage() {
                   key={cat.value}
                   type="button"
                   onClick={() => setForm(f => ({ ...f, category: cat.value }))}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 ${
-                    form.category === cat.value
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 ${form.category === cat.value
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/30'
                       : 'bg-transparent text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-500'
-                  }`}
+                    }`}
                 >
                   {cat.label}
                 </button>

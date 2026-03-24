@@ -52,7 +52,7 @@ function SkeletonCard() {
     <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden animate-pulse flex flex-col h-full">
       {/* Cover Skeleton */}
       <div className="h-48 w-full bg-gray-200 dark:bg-zinc-800 shrink-0" />
-      
+
       {/* Body Skeleton */}
       <div className="p-5 flex flex-col flex-1 gap-4">
         <div className="flex items-center justify-between gap-3">
@@ -101,7 +101,7 @@ function BookCard({ book, onDetails }: BookCardProps) {
   };
 
   return (
-    <article 
+    <article
       onClick={() => onDetails(book.id)}
       className="group cursor-pointer bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-400 dark:hover:border-indigo-500/50 transition-all duration-300 flex flex-col h-full"
     >
@@ -160,7 +160,7 @@ function BookCard({ book, onDetails }: BookCardProps) {
           <Share2 size={18} />
         </button>
         <div className="text-sm font-medium text-gray-500 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1 transition-colors">
-          View Details 
+          View Details
           <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -197,7 +197,8 @@ export function CustomerBooksPage() {
       setHasMore(res.data.hasMore);
       setNextCursor(res.data.nextCursor);
     } catch {
-      toast.error('Failed to load books.');
+      // nothing to do
+
     } finally {
       setIsLoading(false);
     }
@@ -221,7 +222,7 @@ export function CustomerBooksPage() {
       setHasMore(res.data.hasMore);
       setNextCursor(res.data.nextCursor);
     } catch {
-      toast.error('Failed to load more books.');
+      // nothing to do
     } finally {
       setIsLoadingMore(false);
     }

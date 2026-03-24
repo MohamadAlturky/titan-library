@@ -12,7 +12,6 @@ import {
   ChevronLeft, ChevronRight,
   Search, X, Filter, Users,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   adminService,
   type AdminUserDto,
@@ -80,7 +79,7 @@ export function AdminUsersPage() {
         setTotalPages(res.data.totalPages);
         setFiltersOpen(false);
       } catch {
-        toast.error('Failed to load users.');
+        // nothing to do
       } finally {
         setIsLoading(false);
       }
@@ -223,11 +222,10 @@ export function AdminUsersPage() {
                     <button
                       key={opt.value}
                       onClick={() => setDraft(prev => ({ ...prev, userType: opt.value }))}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                        draft.userType === opt.value
-                          ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${draft.userType === opt.value
+                        ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
                     >
                       {opt.label}
                     </button>

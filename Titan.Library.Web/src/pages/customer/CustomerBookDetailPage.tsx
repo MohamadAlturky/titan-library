@@ -96,9 +96,8 @@ export function CustomerBookDetailPage() {
       await customerBookService.borrowBook(book.id);
       toast.success('Book borrowed successfully!');
       setBook({ ...book, isAvailable: false });
-    } catch (err: any) {
-      const message = err?.response?.data?.detail ?? 'Failed to borrow the book.';
-      toast.error(message);
+    } catch {
+      // nothing to do
     } finally {
       setIsBorrowing(false);
     }

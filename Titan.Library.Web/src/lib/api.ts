@@ -32,6 +32,11 @@ apiClient.interceptors.request.use((config) => {
 // Unwrap the backend envelope: { success, message, data: T } → response.data = T
 apiClient.interceptors.response.use(
   (response) => {
+    if (response.data.success == false) {
+      toast.error(response.data.message);
+      return Promise.reject();
+
+    }
     if (response.data && typeof response.data === 'object' && 'data' in response.data) {
       response.data = response.data.data;
     }

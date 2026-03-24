@@ -65,7 +65,6 @@ export function CustomerMyBorrowsPage() {
     // setIsLoading(true);
     customerBookService.getBorrowsByCustomer()
       .then(res => setBorrows(res.data))
-      .catch(() => toast.error('Failed to load your borrows.'))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -82,9 +81,8 @@ export function CustomerMyBorrowsPage() {
             : b,
         ),
       );
-    } catch (err: any) {
-      const message = err?.response?.data?.detail ?? 'Failed to return the book.';
-      toast.error(message);
+    } catch {
+      // nothing to do
     } finally {
       setReturningBookId(null);
     }
@@ -277,11 +275,10 @@ export function CustomerMyBorrowsPage() {
                       <button
                         key={opt.value}
                         onClick={() => setDraft(prev => ({ ...prev, status: opt.value }))}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                          isActive
+                        className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
                             ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                        }`}
+                          }`}
                       >
                         {opt.label}
                       </button>
@@ -331,21 +328,20 @@ export function CustomerMyBorrowsPage() {
                 <tr>
                   {(
                     [
-                      { key: 'id' as SortKey,         label: '#' },
-                      { key: 'bookTitle' as SortKey,  label: 'Book Title' },
+                      { key: 'id' as SortKey, label: '#' },
+                      { key: 'bookTitle' as SortKey, label: 'Book Title' },
                       { key: 'authorName' as SortKey, label: 'Author' },
-                      { key: 'createdAt' as SortKey,  label: 'Borrowed On' },
+                      { key: 'createdAt' as SortKey, label: 'Borrowed On' },
                       { key: 'returnedAt' as SortKey, label: 'Returned On' },
                       { key: 'isReturned' as SortKey, label: 'Status' },
-                      { key: null,                    label: 'Action' },
+                      { key: null, label: 'Action' },
                     ]
                   ).map(col => (
                     <th
                       key={col.label}
                       onClick={col.key ? () => handleSort(col.key!) : undefined}
-                      className={`px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-zinc-300 uppercase tracking-wider border-b border-gray-200 dark:border-zinc-700 ${
-                        col.key ? 'cursor-pointer select-none hover:bg-gray-200 dark:hover:bg-zinc-700' : ''
-                      }`}
+                      className={`px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-zinc-300 uppercase tracking-wider border-b border-gray-200 dark:border-zinc-700 ${col.key ? 'cursor-pointer select-none hover:bg-gray-200 dark:hover:bg-zinc-700' : ''
+                        }`}
                     >
                       <div className="flex items-center gap-1">
                         {col.label}
@@ -394,9 +390,8 @@ export function CustomerMyBorrowsPage() {
                   paginated.map((borrow, i) => (
                     <tr
                       key={borrow.id}
-                      className={`transition-colors hover:bg-indigo-50 dark:hover:bg-zinc-700/40 ${
-                        i % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-gray-50 dark:bg-zinc-800/40'
-                      }`}
+                      className={`transition-colors hover:bg-indigo-50 dark:hover:bg-zinc-700/40 ${i % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-gray-50 dark:bg-zinc-800/40'
+                        }`}
                     >
                       <td className="px-4 py-3 border-b border-gray-100 dark:border-zinc-800">
                         <span className="font-mono text-xs text-gray-500 dark:text-zinc-400">#{borrow.id}</span>
@@ -458,9 +453,8 @@ export function CustomerMyBorrowsPage() {
                     <button
                       key={n}
                       onClick={() => setPage(n as number)}
-                      className={`min-w-[32px] px-2 py-1 rounded text-sm transition-colors ${
-                        page === n ? 'bg-indigo-600 text-white font-medium' : 'hover:bg-gray-100 dark:hover:bg-zinc-800'
-                      }`}
+                      className={`min-w-[32px] px-2 py-1 rounded text-sm transition-colors ${page === n ? 'bg-indigo-600 text-white font-medium' : 'hover:bg-gray-100 dark:hover:bg-zinc-800'
+                        }`}
                     >
                       {n}
                     </button>

@@ -13,7 +13,6 @@ import {
   ChevronLeft, ChevronRight,
   Search, X, Filter, BookOpen, History,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   adminService,
   type AdminBookDto,
@@ -80,7 +79,7 @@ export function AdminBooksPage() {
         setTotalPages(res.data.totalPages);
         setFiltersOpen(false);
       } catch {
-        toast.error('Failed to load books.');
+        // nothing to do
       } finally {
         setIsLoading(false);
       }

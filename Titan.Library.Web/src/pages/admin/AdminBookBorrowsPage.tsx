@@ -5,7 +5,6 @@ import {
   ChevronLeft, ChevronRight,
   BookOpen, ArrowLeft,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   adminService,
   type AdminBorrowDto,
@@ -60,7 +59,7 @@ export function AdminBookBorrowsPage() {
         setTotalCount(res.data.totalCount);
         setTotalPages(res.data.totalPages);
       } catch {
-        toast.error('Failed to load borrow history.');
+        // nothing to do
       } finally {
         setIsLoading(false);
       }
