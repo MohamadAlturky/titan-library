@@ -1,6 +1,15 @@
 # Titan Library API
 
-> The following sections explain the system and how it was built.
+> The following sections explain the system and how it was built and how to run it.
+
+## App run instructions
+
+to run the app just run `docker-compose up --build`
+
+- navigate to <http://localhost:3000> for the react web ui admin pass ("Email": "<titan@library.com>","Password": "ISDhusd98sdhsd98otasdg") or register as author or customer.
+- navigate to <http://localhost:3001> for grafana pass admin admin
+- navigate to <http://localhost:8081> for seq  pass admin admin
+- navigate to <http://localhost:8080/scalar> for api docs
 
 ## Common Layer
 
