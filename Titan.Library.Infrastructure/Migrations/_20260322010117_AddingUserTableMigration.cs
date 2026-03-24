@@ -14,7 +14,7 @@ public class _20260322010117_AddingUserTableMigration(IDbConnectionFactory dbCon
             CREATE TABLE IF NOT EXISTS users (
                 id              SERIAL          PRIMARY KEY,
                 name            VARCHAR(255)    NOT NULL,
-                email           VARCHAR(255)    NOT NULL UNIQUE,
+                email           VARCHAR(255)    NOT NULL,
                 password_hash   VARCHAR(512)    NOT NULL,
                 password_salt   VARCHAR(512)    NOT NULL,
                 created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
