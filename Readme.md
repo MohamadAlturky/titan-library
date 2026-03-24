@@ -96,3 +96,13 @@ Volumes are defined for all stateful services to ensure data persistence.
 We implemented two unit test projects for Domain and Application logic, including specific cases for Authentication and Authorization.
 
 To ensure stability, the test suite runs automatically as a validation gate before the Docker build process.
+
+## Future enhancments
+
+implement api testing using k6 and ui testing using selenium
+continue the implementation for more test cases
+add auditing on books.
+implement actions on admin panel and RBAC for admin users and the delete account and deactivation
+create CI/CD pipelines using jenkins or github actions
+add rate limiting
+implement refresh token
