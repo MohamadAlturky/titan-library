@@ -51,17 +51,20 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
 
     private readonly ICustomerRepository _customerRepository;
     private readonly IAuthorRepository _authorRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IJwtGenerator _jwtGenerator;
 
     public RegisterCommandHandler(
         ICustomerRepository customerRepository,
         IAuthorRepository authorRepository,
-        IJwtGenerator jwtGenerator
+        IJwtGenerator jwtGenerator,
+        IUserRepository userRepository
     )
     {
         _customerRepository = customerRepository;
         _authorRepository = authorRepository;
         _jwtGenerator = jwtGenerator;
+        _userRepository = userRepository;
     }
 
     protected override async Task<Result<AuthTokenDto>> InnerHandle(
@@ -69,6 +72,11 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
         CancellationToken cancellationToken
     )
     {
+        var user = _userRepository.FindByEmail(request.Email);
+        if (user is not null)
+        {
+            return Result<AuthTokenDto>.Fail(ApplicationMessageKeys.USER_ALREADY_REGISTERED);
+        }
         if (request.UserType.Equals(UserTypeValues.Customer, StringComparison.OrdinalIgnoreCase))
         {
             var customer = Customer.Create(request.Name, request.Email, request.Password);
