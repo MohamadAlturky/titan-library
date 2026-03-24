@@ -53,7 +53,7 @@ The tool's responsibility is generating a migration file in the correct conventi
 
 ## Web Layer
 
-Implemented as a React single-page application with separate routes and layouts for customers, authors, and admins. Contains service modules that use Axios to define API calls, along with Axios interceptors to handle auth headers and invalid token scenarios. Custom hooks are provided for authentication and theming.
+Implemented as a React single-page application with separate routes and layouts for customers, authors, and admins. Contains service modules that use Axios to define API calls, along with Axios interceptors to handle auth headers and invalid token scenarios and 500 errors and general failed messages. Custom hooks are provided for authentication and theming.
 
 ## App Startup Seeders
 

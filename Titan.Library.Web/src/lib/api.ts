@@ -48,6 +48,9 @@ apiClient.interceptors.response.use(
       removeTokenCookie();
       toast.error(status === 403 ? 'You do not have permission to perform this action.' : 'Your session has expired. Please log in again.');
       setTimeout(() => { window.location.href = '/login'; }, 1500);
+    } else if (status >= 500) {
+      const message = error?.response?.data?.message;
+      toast.error(message ?? 'A server error occurred. Please try again later.');
     }
     return Promise.reject(error);
   },
