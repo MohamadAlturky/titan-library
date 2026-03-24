@@ -72,7 +72,7 @@ public class RegisterCommandHandler : BaseCommandHandler<RegisterCommand, AuthTo
         CancellationToken cancellationToken
     )
     {
-        var user = _userRepository.FindByEmail(request.Email);
+        var user = await _userRepository.FindByEmail(request.Email);
         if (user is not null)
         {
             return Result<AuthTokenDto>.Fail(ApplicationMessageKeys.USER_ALREADY_REGISTERED);

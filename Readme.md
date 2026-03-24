@@ -90,3 +90,9 @@ Docker Compose is used to define all application services:
 - Seq for storing logs and serving the UI
 
 Volumes are defined for all stateful services to ensure data persistence.
+
+## Testing
+
+We implemented two unit test projects for Domain and Application logic, including specific cases for Authentication and Authorization.
+
+To ensure stability, the test suite runs automatically as a validation gate before the Docker build process.
