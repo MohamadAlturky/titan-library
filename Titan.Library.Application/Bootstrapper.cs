@@ -19,9 +19,9 @@ public static class ApplicationBootstrapper
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
+        services.Configure<AdminSettings>(configuration.GetSection(AdminSettings.SectionName));
         services.AddTransient<ApplicationMessageKeysDataSeeder>();
         services.AddTransient<AdminUserSeeder>();
-        services.Configure<AdminSettings>(configuration);
 
         services.AddScoped<IMessageCacheKeyResolver, MessageCacheKeyResolver>();
         services.AddScoped<IMessageCacheValueResolver, MessageCacheValueResolver>();
