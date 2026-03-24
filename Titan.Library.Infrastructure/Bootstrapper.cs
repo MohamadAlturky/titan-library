@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using StackExchange.Redis;
 using Titan.Library.Common.Auth;
+using Titan.Library.Common.Caching;
 using Titan.Library.Common.Storage;
 using Titan.Library.Domain.Books;
 using Titan.Library.Domain.Borrows;
 using Titan.Library.Domain.Feedbacks;
-using Titan.Library.Common.Caching;
 using Titan.Library.Domain.Messages;
 using Titan.Library.Domain.Users;
 using Titan.Library.Infrastructure.Auth;
@@ -41,18 +42,39 @@ public static class InfrastructureBootstrapper
             );
         }
 
-        var redisConnection = configuration.GetConnectionString("RedisConnection")
+        var redisConnection =
+            configuration.GetConnectionString("RedisConnection")
             ?? throw new InvalidOperationException("RedisConnection connection string is missing.");
 
         services.AddJwtAuth(configuration);
 
         services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect(redisConnection));
+            ConnectionMultiplexer.Connect(redisConnection)
+        );
 
         services.AddSingleton<ICacheService, RedisCacheService>();
 
+        var pooling =
+            configuration
+                .GetSection(PostgresPoolingOptions.SectionName)
+                .Get<PostgresPoolingOptions>()
+            ?? new PostgresPoolingOptions();
+
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString)
+        {
+            Pooling = true,
+            MinPoolSize = pooling.MinPoolSize,
+            MaxPoolSize = pooling.MaxPoolSize,
+            ConnectionIdleLifetime = pooling.ConnectionIdleLifetimeSeconds,
+            Timeout = pooling.ConnectionTimeoutSeconds,
+        };
+
+        var dataSource = new NpgsqlDataSourceBuilder(
+            connectionStringBuilder.ConnectionString
+        ).Build();
+        services.AddSingleton(dataSource);
         services.AddSingleton<IDbConnectionFactory>(_ => new PostgresDbConnectionFactory(
-            connectionString
+            dataSource
         ));
         services.AddScoped<ISqlDbContext, SqlDbContext>();
         services.AddScoped<IAsyncUnitOfWork>(sp => sp.GetRequiredService<ISqlDbContext>());
@@ -72,7 +94,8 @@ public static class InfrastructureBootstrapper
 
     private static void AddJwtAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+        var jwtOptions =
+            configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
@@ -92,7 +115,7 @@ public static class InfrastructureBootstrapper
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
                 };
             });
 

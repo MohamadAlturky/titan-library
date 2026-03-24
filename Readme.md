@@ -115,3 +115,4 @@ implement actions on admin panel and RBAC for admin users and the delete account
 create CI/CD pipelines using jenkins or github actions
 add rate limiting
 implement refresh token
+implement postgres connection pooling using pgbouncer.

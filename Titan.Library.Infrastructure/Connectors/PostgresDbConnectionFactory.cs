@@ -1,4 +1,3 @@
-using System.Data;
 using System.Data.Common;
 using Npgsql;
 
@@ -6,17 +5,15 @@ namespace Titan.Library.Infrastructure.Connectors;
 
 public class PostgresDbConnectionFactory : IDbConnectionFactory
 {
-    private readonly string _connectionString;
+    private readonly NpgsqlDataSource _dataSource;
 
-    public PostgresDbConnectionFactory(string connectionString)
+    public PostgresDbConnectionFactory(NpgsqlDataSource dataSource)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
-
-        _connectionString = connectionString;
+        _dataSource = dataSource;
     }
 
     public DbConnection CreateDbConnection()
     {
-        return new NpgsqlConnection(_connectionString);
+        return _dataSource.CreateConnection();
     }
 }
